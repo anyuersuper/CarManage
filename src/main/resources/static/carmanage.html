@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>车辆管理</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        /* 全局样式 */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f7f8fa;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* 导航栏样式 */
+        .navbar {
+            width: 100%;
+            background-color: #007bff;
+            padding: 15px 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            position: relative;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 500;
+            padding: 10px 20px;
+            border-radius: 30px;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .navbar a:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        .navbar .logout-btn {
+            background-color: #dc3545;
+            position: absolute;
+            right: 20px;  /* 将退出登录按钮定位到最右边 */
+        }
+
+        .navbar .logout-btn:hover {
+            background-color: #c82333;
+        }
+
+        /* 页面内容 */
+        .container {
+            width: 80%;
+            max-width: 1200px;
+            margin-top: 30px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-container {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: flex-start;
+            gap: 10px;
+            flex-wrap: wrap;
+            max-width: 100%; /* 让其最大宽度适应页面 */
+            margin-right: auto; /* 保证左对齐 */
+        }
+
+        #searchField, #searchInput {
+            padding: 8px;
+            font-size: 14px;
+            width: 200px;
+        }
+
+        .btn-search {
+            padding: 8px 20px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .btn-search:hover {
+            background-color: #0056b3;
+        }
+
+        /* 表格容器 */
+        .table-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+
+        select, input {
+            padding: 5px;
+            font-size: 14px;
+        }
+
+        .btn {
+            padding: 6px 12px;
+            margin: 3px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-edit {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .btn-edit:hover {
+            background-color: #218838;
+        }
+
+        .btn-delete {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background-color: #c82333;
+        }
+
+        .pagination {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .pagination button {
+            padding: 8px 15px;
+            margin: 5px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .pagination button:disabled {
+            background-color: #ccc;
+        }
+
+        #greeting {
+            font-size: 20px;
+            margin-bottom: 30px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- 导航栏 -->
+    <div class="navbar">
+        <a href="/home.html">首页</a>
+        <a href="/usermanage.html">用户管理</a>
+        <a href="/carmanage.html">车辆管理</a>
+        <a href="/billing-management.html">账单管理</a>
+        <a href="/work-order-management.html">工单管理</a>
+        <a href="/application-management.html">申请管理</a>
+        <a href="javascript:void(0);" class="logout-btn" onclick="logout()">退出登录</a>
+    </div>
+
+    <!-- 车辆管理页面内容 -->
+    <div class="container">
+        <h1 id="greeting"></h1>
+
+        <div class="search-container">
+            <select id="searchField">
+                <option value="carid">车辆ID</option>
+                <option value="uid">UID</option>
+                <option value="kind">种类</option>
+                <option value="year">年份</option>
+                <option value="color">颜色</option>
+            </select>
+            <input type="text" id="searchInput" placeholder="请输入搜索内容">
+            <button class="btn btn-search" onclick="searchCars()">搜索</button>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>车辆ID</th>
+                        <th>UID</th>
+                        <th>种类</th>
+                        <th>年份</th>
+                        <th>颜色</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="car-table">
+                    <!-- 车辆数据将通过 JavaScript 填充 -->
+                </tbody>
+            </table>
+
+            <div class="pagination">
+                <button id="prevPage">上一页</button>
+                <span id="pageInfo"></span>
+                <button id="nextPage">下一页</button>
+            </div>
+        </div>
+    </div>
+
+	<script>
+			let cars = [];
+			let currentPage = 1;
+			const pageSize = 10;
+
+			// 获取车辆数据
+			function fetchCars() {
+			    $.get("/cmcar/mycar", function(data) {
+			        cars = data;  // 存储数据
+			        renderTable();
+			    }).fail(function() {
+			        alert("获取车辆数据失败！");
+			    });
+			}
+
+			// 渲染表格数据
+			function renderTable() {
+			    $("#car-table").empty();
+			    let start = (currentPage - 1) * pageSize;
+			    let end = start + pageSize;
+			    let pageCars = cars.slice(start, end);
+
+			    pageCars.forEach(car => {
+			        let row = `
+			            <tr>
+			                <td>${car.carid}</td>
+			                <td>${car.uid}</td>
+			                <td>${car.kind}</td>
+			                <td>${car.year}</td>
+			                <td>${car.color}</td>
+			                <td>
+			                    <button class="btn btn-edit" onclick="editCar(${car.carid})">修改</button>
+			                    <button class="btn btn-delete" onclick="deleteCar(${car.carid})">删除</button>
+			                </td>
+			            </tr>
+			        `;
+			        $("#car-table").append(row);
+			    });
+
+			    $("#pageInfo").text(`第 ${currentPage} 页 / 共 ${Math.ceil(cars.length / pageSize)} 页`);
+			    $("#prevPage").prop("disabled", currentPage === 1);
+			    $("#nextPage").prop("disabled", currentPage * pageSize >= cars.length);
+			}
+
+			// 上一页
+			$("#prevPage").click(function() {
+			    if (currentPage > 1) {
+			        currentPage--;
+			        renderTable();
+			    }
+			});
+
+			// 下一页
+			$("#nextPage").click(function() {
+			    if (currentPage * pageSize < cars.length) {
+			        currentPage++;
+			        renderTable();
+			    }
+			});
+
+
+			// 修改车辆
+			function editCar(carid) {
+			    // 根据车ID获取当前车辆数据
+			    const car = cars.find(c => c.carid === carid);
+			    
+			    if (car) {
+			        // 弹出编辑表单，预填充数据
+			        const newKind = prompt("修改车辆种类:", car.kind);
+			        const newYear = prompt("修改车辆年份:", car.year);
+			        const newColor = prompt("修改车辆颜色:", car.color);
+			        
+			        if (newKind && newYear && newColor) {
+			            // 更新车辆对象
+			            car.kind = newKind;
+			            car.year = newYear;
+			            car.color = newColor;
+
+			            // 发送更新请求到后端
+			            $.ajax({
+			                url: `/cmcar/update`,
+			                type: 'POST',
+			                contentType: 'application/json',
+			                data: JSON.stringify(car),
+			                success: function(response) {
+			                    alert("车辆信息更新成功！");
+			                    fetchCars();  // 重新加载数据
+			                },
+			                error: function() {
+			                    alert("更新车辆信息失败！");
+			                }
+			            });
+			        }
+			    }
+			}
+
+
+			// 删除车辆
+			function deleteCar(carid) {
+			    if (confirm(`确定要删除车辆 ID: ${carid} 吗？`)) {
+			        // 发送删除请求到后端
+			        $.ajax({
+			            url: `/cmcar/delete/${carid}`,
+			            type: 'GET',
+			            success: function(response) {
+			                alert("车辆删除成功！");
+			                fetchCars();  // 重新加载数据
+			            },
+			            error: function() {
+			                alert("删除车辆失败！");
+			            }
+			        });
+			    }
+			}
+
+
+			// 退出登录功能
+			function logout() {
+			    document.cookie = "isLoggedIn=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
+			    document.cookie = "username=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
+			    window.location.href = "/index.html"; // 跳转到登录页面
+			}
+
+			// 显示用户问候信息
+			function showGreeting() {
+			    let cookies = document.cookie.split('; ');
+			    let username = cookies.find(cookie => cookie.startsWith('username='));
+
+			    if (username) {
+			        let usernameValue = username.split('=')[1];
+			        $("#greeting").text(`${usernameValue}，你好！`);
+			    }
+			}
+
+			// 检查用户是否已登录
+			function checkLogin() {
+			    let cookies = document.cookie.split('; ');
+			    let isLoggedIn = cookies.find(cookie => cookie.startsWith('isLoggedIn='));
+
+			    if (!isLoggedIn) {
+			        window.location.href = "/index.html"; // 未登录，跳转到登录页面
+			    }
+			}
+
+			// 页面加载完成后获取数据 & 检查登录状态
+			$(document).ready(function() {
+			    checkLogin();
+			    showGreeting();
+			    fetchCars();
+			});
+			
+			
+			//搜索
+			function searchCars() {
+			    const searchField = $("#searchField").val();  // 获取选择的搜索字段
+			    const searchInput = $("#searchInput").val().trim();  // 获取输入框中的搜索内容，去掉空格
+
+			    // 输出搜索字段和输入的内容，查看用户输入的是什么
+			    console.log("Search Field:", searchField);
+			    console.log("Search Input:", searchInput);
+
+			    // 如果搜索内容为空，显示所有车辆
+			    if (!searchInput) {
+			        fetchCars();  // 重新获取所有数据并渲染
+			        return;
+			    }
+
+			    // 过滤数据
+			    const filteredCars = cars.filter(car => {
+			        // 输出每辆车的 kind 字段，确保我们可以看到它的值
+			        console.log("Car kind:", car.kind);
+
+			        // 判断输入是否包含中文字符
+			        const isChinese = /[\u4e00-\u9fa5]/.test(searchInput);  // 正则判断是否为中文
+
+			        // 根据选择的搜索字段进行筛选
+			        switch (searchField) {
+			            case 'carid':
+			                return car.carid.toString().includes(searchInput);
+			            case 'uid':
+			                return car.uid.toString().includes(searchInput);
+			            case 'kind':
+							return car.kind.toLowerCase().includes(searchInput.toLowerCase());
+			            case 'year':
+			                return car.year.toLowerCase().includes(searchInput.toLowerCase());
+			            case 'color':
+			                return car.color.toLowerCase().includes(searchInput.toLowerCase());
+			            default:
+			                return false;
+			        }
+			    });
+
+			    cars = filteredCars;  // 更新为筛选后的车辆数据
+			    renderTable();  // 重新渲染表格
+			}
+
+
+
+
+	    </script>
+
+</body>
+</html>

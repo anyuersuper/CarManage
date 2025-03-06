@@ -6,11 +6,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.carmanage.dao.cmusr;
 import com.carmanage.Mapper.*;
 
 @RestController
+@RequestMapping("/cmusr")
 public class userop {
     private final cmusrMapper cmusrMapper;
 
@@ -19,17 +21,11 @@ public class userop {
         this.cmusrMapper = cmusrMapper;
     }
 
-    @GetMapping("/find/{username}")
+    //查找记录
+    @GetMapping("/search/{username}")
     public cmusr selectByPrimaryKey(@PathVariable  String username)
     {
     	return cmusrMapper.selectByPrimaryKey(username);
-    }
-    
-    //增加一个记录
-    @PostMapping("/add")
-    public int insert(@RequestBody  cmusr row) 
-    {
-    	return cmusrMapper.insert(row);
     }
     
     //删除一个记录
@@ -40,7 +36,7 @@ public class userop {
     }
     
     //修改一个记录
-    @PostMapping("/change")
+    @PostMapping("/update")
     public int updateByPrimaryKey(@RequestBody  cmusr row) 
     {
     	return cmusrMapper.updateByPrimaryKey(row);

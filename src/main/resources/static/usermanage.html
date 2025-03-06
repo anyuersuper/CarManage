@@ -231,7 +231,8 @@
     <!-- 导航栏 -->
     <div class="navbar">
         <a href="/home.html">首页</a>
-        <a href="/vehicle-management.html">车辆管理</a>
+		<a href="/usermanage.html">用户管理</a>
+        <a href="/carmanage.html">车辆管理</a>
         <a href="/billing-management.html">账单管理</a>
         <a href="/work-order-management.html">工单管理</a>
         <a href="/application-management.html">申请管理</a>
@@ -297,7 +298,7 @@
         const pageSize = 10;
 
         function fetchUsers() {
-            $.get("/all", function(data) {
+            $.get("/cmusr/all", function(data) {
                 users = data;
                 renderTable();
             });
@@ -360,7 +361,7 @@
             let updatedUser = { uid, username, password: newPassword, authority: parseInt(newAuthority) };
 
             $.ajax({
-                url: "/change",
+                url: "/cmusr/update",
                 type: "POST",
                 contentType: "application/json",
                 data: JSON.stringify(updatedUser),
@@ -377,7 +378,7 @@
         function deleteUser(username) {
             if (confirm("确定要删除此用户吗？")) {
                 $.ajax({
-                    url: `/delete/${username}`,
+                    url: `/cmusr/delete/${username}`,
                     type: "GET",
                     success: function() {
                         alert("删除成功！");
@@ -434,7 +435,7 @@
 		        };
 
 		        $.ajax({
-		            url: "/register", // 调用register接口
+		            url: "/cmusr/register", // 调用register接口
 		            type: "POST",
 		            contentType: "application/json",
 		            data: JSON.stringify(user),
