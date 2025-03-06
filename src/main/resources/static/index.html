@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>车辆维修审批系统</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+        }
+        .login-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            text-align: center;
+        }
+        input {
+            width: 90%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .message {
+            margin-top: 10px;
+            color: red;
+        }
+        .register-link {
+            margin-top: 10px;
+            display: block;
+            color: #007bff;
+            cursor: pointer;
+        }
+        .register-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-container">
+        <h2>车辆维修审批系统</h2>
+        <input type="text" id="username" placeholder="请输入用户名">
+        <input type="password" id="password" placeholder="请输入密码">
+        <button onclick="login()">登录</button>
+        <p class="message" id="message"></p>
+        <!-- 注册按钮，点击跳转到 register.html -->
+        <a href="register.html" class="register-link">还没有账号？点击注册</a>
+    </div>
+
+    <script>
+        function login() {
+            let username = document.getElementById("username").value.trim();
+            let password = document.getElementById("password").value.trim();
+            let messageBox = document.getElementById("message");
+
+            if (!username || !password) {
+                messageBox.innerText = "用户名和密码不能为空！";
+                return;
+            }
+
+            fetch("/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username: username, password: password })
+            })
+            .then(response => response.text()) // 服务器返回文本信息
+            .then(data => {
+                messageBox.innerText = data;
+                if (data === "登录成功！") {
+                    messageBox.style.color = "green";
+                    // 设置 cookie 表示登录状态
+                    document.cookie = "isLoggedIn=true; path=/; max-age=" + 60*60*24; // Cookie 有效期一天
+					document.cookie = "username=" + username; // 存储用户名
+                    setTimeout(() => { window.location.href = "/home.html"; }, 1000); // 登录成功后跳转
+                } else {
+                    messageBox.style.color = "red";
+                }
+            })
+            .catch(error => {
+                console.error("请求出错：", error);
+                messageBox.innerText = "服务器错误，请稍后重试！";
+            });
+        }
+    </script>
+
+</body>
+</html>

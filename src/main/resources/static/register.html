@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户注册</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+        }
+        .register-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            text-align: center;
+        }
+        input {
+            width: 90%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #218838;
+        }
+        .message {
+            margin-top: 10px;
+            color: red;
+        }
+        .login-link {
+            margin-top: 10px;
+            display: block;
+            color: #007bff;
+            cursor: pointer;
+        }
+        .login-link:hover {
+            text-decoration: underline;
+        }
+        .password-feedback {
+            font-size: 12px;
+            color: red;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="register-container">
+        <h2>用户注册</h2>
+        <input type="text" id="username" placeholder="请输入用户名" required>
+        <input type="password" id="password" placeholder="请输入密码" required>
+        <input type="password" id="confirmPassword" placeholder="确认密码" required>
+		<p id="password-feedback" class="password-feedback"></p> <!-- 提示信息 -->
+        <button onclick="register()">注册</button>
+        <p class="message" id="message"></p>
+        <!-- 修改跳转到 index.html 的链接 -->
+        <a href="index.html" class="login-link">已经有账号了？点击登录</a>
+    </div>
+
+    <script>
+        // 密码强度检测函数
+        function checkPasswordStrength(password) {
+            const feedback = document.getElementById("password-feedback");
+            // 密码强度检测规则：长度大于8，包含字母和数字
+            const lengthValid = password.length > 8;
+            const hasNumber = /[0-9]/.test(password);
+            const hasLetter = /[a-zA-Z]/.test(password);
+
+            if (!lengthValid) {
+                feedback.innerText = "密码长度必须大于8个字符";
+            } else if (!hasNumber || !hasLetter) {
+                feedback.innerText = "密码必须包含字母和数字";
+            } else {
+                feedback.innerText = "";
+            }
+        }
+
+        // 当用户输入密码时进行强度检测
+        document.getElementById("password").addEventListener("input", function() {
+            const password = this.value;
+            checkPasswordStrength(password);
+        });
+
+        function register() {
+            let username = document.getElementById("username").value.trim();
+            let password = document.getElementById("password").value.trim();
+            let confirmPassword = document.getElementById("confirmPassword").value.trim();
+            let messageBox = document.getElementById("message");
+
+            // 表单验证
+            if (!username || !password || !confirmPassword) {
+                messageBox.innerText = "所有字段不能为空！";
+                messageBox.style.color = "red";
+                return;
+            }
+
+            // 检查密码强度
+            const feedback = document.getElementById("password-feedback").innerText;
+            if (feedback !== "") {
+                messageBox.innerText = "请修正密码强度！";
+                messageBox.style.color = "red";
+                return;
+            }
+
+            // 检查密码是否一致
+            if (password !== confirmPassword) {
+                messageBox.innerText = "密码和确认密码不一致！";
+                messageBox.style.color = "red";
+                return;
+            }
+
+            // 创建注册请求的 payload
+            const data = {
+                username: username,
+                password: password
+            };
+
+            // 发起注册请求
+            fetch("/register", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.text())
+            .then(data => {
+                messageBox.innerText = data;
+                if (data === "注册成功！") {
+                    messageBox.style.color = "green";
+                    setTimeout(() => { window.location.href = "/index.html"; }, 1000); // 注册成功后跳转到 index.html
+                } else {
+                    messageBox.style.color = "red";
+                }
+            })
+            .catch(error => {
+                console.error("请求出错：", error);
+                messageBox.innerText = "服务器错误，请稍后重试！";
+                messageBox.style.color = "red";
+            });
+        }
+    </script>
+
+</body>
+</html>

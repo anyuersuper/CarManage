@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>车辆维修审批系统</title>
+    <style>
+        /* 全局样式 */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f7f8fa;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* 导航栏样式 */
+        .navbar {
+            width: 100%;
+            background-color: #007bff;
+            padding: 15px 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            position: relative;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 500;
+            padding: 10px 20px;
+            border-radius: 30px;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .navbar a:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        .navbar .logout-btn {
+            background-color: #dc3545;
+            position: absolute;
+            right: 20px;  /* 将退出登录按钮定位到最右边 */
+        }
+
+        .navbar .logout-btn:hover {
+            background-color: #c82333;
+        }
+
+        /* 页面内容 */
+        .content {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 900px;
+        }
+
+        .content h1 {
+            font-size: 32px;
+            color: #333;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .content p {
+            font-size: 18px;
+            color: #555;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                padding: 20px;
+            }
+
+            .navbar a {
+                font-size: 14px;
+                padding: 12px 24px;
+            }
+
+            .content {
+                width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 导航栏 -->
+    <div class="navbar">
+        <!-- 用户管理链接在最前面 -->
+        <a id="user-management-link" href="/usermanage.html" style="display:none;">用户管理</a>
+        <a href="/vehicle-management.html">车辆管理</a>
+        <a href="/billing-management.html">账单管理</a>
+        <a href="/work-order-management.html">工单管理</a>
+        <a href="/application-management.html">申请管理</a>
+        <!-- 退出登录按钮定位到最右边 -->
+        <a href="javascript:void(0);" class="logout-btn" onclick="logout()">退出登录</a>
+    </div>
+
+    <!-- 用户问候语 -->
+    <div class="content">
+        <h1 id="greeting"></h1>
+        <p>欢迎来到车辆维修审批系统，您可以在这里进行各种管理操作。</p>
+    </div>
+
+    <script>
+        // 检查是否登录（即检查 isLoggedIn cookie 是否存在）
+        function checkLogin() {
+            let cookies = document.cookie.split('; ');
+            let isLoggedIn = cookies.find(cookie => cookie.startsWith('isLoggedIn='));
+            let username = cookies.find(cookie => cookie.startsWith('username='));
+
+            if (!isLoggedIn) {
+                // 如果没有登录，跳转到登录页面
+                window.location.href = "/index.html";
+            } else {
+                // 如果已登录，显示用户名
+                if (username) {
+                    let usernameValue = username.split('=')[1];
+                    document.getElementById('greeting').innerText = `${usernameValue}，你好！`;
+
+                    // 如果是 admin，显示 "用户管理" 链接
+                    if (usernameValue === "admin") {
+                        document.getElementById('user-management-link').style.display = "inline-block";
+                    }
+                }
+            }
+        }
+
+        // 退出登录功能
+        function logout() {
+            // 删除 cookies
+            document.cookie = "isLoggedIn=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
+            document.cookie = "username=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
+            // 跳转到登录页面
+            window.location.href = "/index.html";
+        }
+
+        // 页面加载时检查登录状态
+        checkLogin();
+    </script>
+
+</body>
+</html>

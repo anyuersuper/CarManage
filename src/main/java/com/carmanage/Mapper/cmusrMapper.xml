@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.carmanage.Mapper.cmusrMapper">
+  <resultMap id="BaseResultMap" type="com.carmanage.dao.cmusr">
+    <id column="username" jdbcType="VARCHAR" property="username" />
+    <result column="uid" jdbcType="INTEGER" property="uid" />
+    <result column="password" jdbcType="VARCHAR" property="password" />
+    <result column="authority" jdbcType="INTEGER" property="authority" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    username, uid, password, authority
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from cm_usr
+    where username = #{username,jdbcType=VARCHAR}
+  </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+	select
+	<include refid="Base_Column_List" />
+	from cm_usr
+	</select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from cm_usr
+    where username = #{username,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.carmanage.dao.cmusr">
+    insert into cm_usr (username, uid, password, 
+      authority)
+    values (#{username,jdbcType=VARCHAR}, #{uid,jdbcType=INTEGER}, #{password,jdbcType=VARCHAR}, 
+      #{authority,jdbcType=INTEGER})
+  </insert>
+  <insert id="insertSelective" parameterType="com.carmanage.dao.cmusr">
+    insert into cm_usr
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="username != null">
+        username,
+      </if>
+      <if test="uid != null">
+        uid,
+      </if>
+      <if test="password != null">
+        password,
+      </if>
+      <if test="authority != null">
+        authority,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="username != null">
+        #{username,jdbcType=VARCHAR},
+      </if>
+      <if test="uid != null">
+        #{uid,jdbcType=INTEGER},
+      </if>
+      <if test="password != null">
+        #{password,jdbcType=VARCHAR},
+      </if>
+      <if test="authority != null">
+        #{authority,jdbcType=INTEGER},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.carmanage.dao.cmusr">
+    update cm_usr
+    <set>
+      <if test="uid != null">
+        uid = #{uid,jdbcType=INTEGER},
+      </if>
+      <if test="password != null">
+        password = #{password,jdbcType=VARCHAR},
+      </if>
+      <if test="authority != null">
+        authority = #{authority,jdbcType=INTEGER},
+      </if>
+    </set>
+    where username = #{username,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.carmanage.dao.cmusr">
+    update cm_usr
+    set uid = #{uid,jdbcType=INTEGER},
+      password = #{password,jdbcType=VARCHAR},
+      authority = #{authority,jdbcType=INTEGER}
+    where username = #{username,jdbcType=VARCHAR}
+  </update>
+</mapper>
