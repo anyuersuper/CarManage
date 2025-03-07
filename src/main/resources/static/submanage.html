@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>申请管理</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+		/* 全局样式 */
+		body {
+		    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+		    background-color: #f7f8fa;
+		    margin: 0;
+		    padding: 0;
+		    display: flex;
+		    flex-direction: column;
+		    align-items: center;
+		}
+
+        /* 导航栏样式 */
+        .navbar {
+            width: 100%;
+            background-color: #007bff;
+            padding: 15px 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            position: relative;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 500;
+            padding: 10px 20px;
+            border-radius: 30px;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .navbar a:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        .navbar .logout-btn {
+            background-color: #dc3545;
+            position: absolute;
+            right: 20px;
+        }
+
+        .navbar .logout-btn:hover {
+            background-color: #c82333;
+        }
+
+        /* 页面内容 */
+        .container {
+            width: 80%;
+            max-width: 1200px;
+            margin-top: 30px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        #greeting {
+            font-size: 20px;
+            margin-bottom: 30px;
+        }
+
+        /* 搜索框样式 */
+        .search-box {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .search-box select, .search-box input {
+            padding: 8px;
+            width: 250px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .search-box button {
+            padding: 8px 16px;
+            border: 1px solid #007bff;
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .search-box button:hover {
+            background-color: #0056b3;
+        }
+
+		/* 表格样式 */
+		table {
+		    width: 100%;
+		    border-collapse: collapse;
+		    margin-top: 20px;
+		}
+
+		table, th, td {
+		    border: 1px solid #ddd;
+		}
+
+		th, td {
+		    padding: 12px;
+		    text-align: center;
+		    word-wrap: break-word;
+		    max-width: 200px; /* 限制每列最大宽度 */
+		}
+
+		/* 强制让超出内容部分截断显示，并使用省略号 */
+		td.content {
+		    max-height: 100px; /* 设置最大高度 */
+		    overflow: hidden; /* 超出部分隐藏 */
+		    text-overflow: ellipsis; /* 超过宽度部分使用省略号显示 */
+		    white-space: nowrap; /* 防止超出部分换行 */
+		    text-align: left;
+		}
+
+		th {
+		    background-color: #007bff;
+		    color: white;
+		}
+
+		/* 修复按钮和下拉框样式 */
+		td select, td button {
+		    width: 100%;
+		    padding: 5px;
+		    border-radius: 5px;
+		    border: 1px solid #ddd;
+		}
+		
+		
+
+		
+
+		/* 分页样式 */
+		.pagination {
+		    margin-top: 20px;
+		    display: flex;
+		    justify-content: center;
+		}
+
+		.pagination button {
+		    padding: 8px 16px;
+		    margin: 0 5px;
+		    border: 1px solid #ddd;
+		    background-color: #007bff;
+		    color: white;
+		    font-size: 16px;
+		    border-radius: 5px;
+		    cursor: pointer;
+		}
+
+		.pagination button:hover {
+		    background-color: #0056b3;
+		}
+
+		.pagination button.disabled {
+		    background-color: #cccccc;
+		    cursor: not-allowed;
+		}
+    </style>
+</head>
+<body>
+
+    <!-- 导航栏 -->
+    <div class="navbar">
+        <a href="/home.html">首页</a>
+        <a id="user-management-link" href="/usermanage.html" style="display:none;">用户管理</a>
+        <a href="/carmanage.html">车辆管理</a>
+        <a href="/ordermanage.html">账单管理</a>
+        <a href="/workordermanage.html">工单管理</a>
+        <a href="/submanage.html">申请管理</a>
+        <a href="javascript:void(0);" class="logout-btn" onclick="logout()">退出登录</a>
+    </div>
+
+    <!-- 页面主要内容 -->
+    <div class="container">
+        <h1 id="greeting"></h1>
+
+        <!-- 搜索框 -->
+        <div class="search-box">
+            <select id="search-field">
+                <option value="subid">申请ID</option>
+                <option value="uid">用户ID</option>
+                <option value="content">申请内容</option>
+                <option value="status">状态</option>
+            </select>
+            <input type="text" id="search-input" placeholder="请输入搜索内容" />
+            <button onclick="searchApplications()">搜索</button>
+			<button onclick="window.location.href='subadd.html'">提交申请</button>
+
+        </div>
+
+        <!-- 申请管理表格 -->
+        <table id="application-table">
+            <thead>
+                <tr>
+                    <th>申请ID</th>
+                    <th>用户ID</th>
+                    <th>申请内容</th>
+                    <th>状态</th>
+                    <th id="operation-column" style="display:none;">操作</th> <!-- 操作列默认隐藏 -->
+                </tr>
+            </thead>
+            <tbody>
+                <!-- 动态生成的申请行 -->
+            </tbody>
+        </table>
+
+        <!-- 分页控件 -->
+        <div class="pagination">
+            <button id="prev-page" onclick="changePage(-1)" class="disabled">上一页</button>
+            <button id="next-page" onclick="changePage(1)">下一页</button>
+        </div>
+    </div>
+
+    <script>
+    // 每页显示10条数据
+    const itemsPerPage = 10;
+    let currentPage = 1;
+    let filteredApplications = []; // 存储过滤后的申请数据
+    let allApplications = []; // 存储所有申请数据，便于搜索
+
+	// 加载申请数据
+	function loadApplications(page) {
+	    $.get("/cmsub/mysub", function(data) {
+	        allApplications = data; // 存储所有申请数据
+	        filterApplications(); // 根据当前搜索条件过滤应用
+	        let start = (page - 1) * itemsPerPage;
+	        let end = start + itemsPerPage;
+	        let applicationsToShow = filteredApplications.slice(start, end);
+
+	        let tbody = $("#application-table tbody");
+	        tbody.empty();
+	        applicationsToShow.forEach(function(application) {
+	            let content = application.content.length > 100 ? application.content.substring(0, 100) + '...' : application.content;
+	            let row = `<tr>
+	                        <td>${application.subid}</td>
+	                        <td>${application.uid}</td>
+	                        <td class="content">${content}</td>
+	                        <td>
+	                            <select>
+	                                <option ${application.status === "审批中" ? "selected" : ""}>审批中</option>
+	                                <option ${application.status === "通过" ? "selected" : ""}>通过</option>
+	                                <option ${application.status === "未通过" ? "selected" : ""}>未通过</option>
+	                                <option ${application.status === "打回" ? "selected" : ""}>打回</option>
+	                            </select>
+	                        </td>
+	                        ${window.isAdmin ? `<td><button onclick="editApplication(${application.subid})">修改</button></td>` : ''}
+	                      </tr>`;
+	            tbody.append(row);
+	        });
+
+	        // 添加点击事件来显示完整内容
+	        $(".content").click(function() {
+	            let content = $(this).text().trim(); // 获取该行的申请内容
+	            alert(content); // 弹出提示框显示完整的内容
+	        });
+
+	        updatePagination(page);
+	    });
+	}
+
+
+
+
+
+    // 根据搜索条件过滤申请数据
+    function filterApplications() {
+        const searchField = $("#search-field").val(); // 获取选择的字段
+        const searchText = $("#search-input").val().toLowerCase(); // 获取输入框的内容
+
+        filteredApplications = allApplications.filter(function(application) {
+            return application[searchField] && application[searchField].toString().toLowerCase().includes(searchText);
+        });
+    }
+
+    // 更新分页按钮状态
+    function updatePagination(page) {
+        const totalPages = Math.ceil(filteredApplications.length / itemsPerPage);
+        $("#prev-page").toggleClass("disabled", page === 1);
+        $("#next-page").toggleClass("disabled", page === totalPages);
+    }
+
+    // 搜索申请
+    function searchApplications() {
+        filterApplications(); // 每次搜索时过滤数据
+        currentPage = 1; // 搜索后从第一页开始
+        loadApplications(currentPage);
+    }
+
+    // 页面加载完成后检查登录状态、显示问候信息，并加载申请数据
+    $(document).ready(function() {
+        checkLogin();
+        showGreeting();
+        loadApplications(currentPage);
+    });
+
+    // 分页按钮的点击事件
+    function changePage(direction) {
+        currentPage += direction;
+        loadApplications(currentPage);
+    }
+
+    // 编辑申请记录
+	function editApplication(subid) {
+	    // 获取当前行的 status
+	    let row = event.target.closest('tr');
+	    let selectElement = row.querySelector('select');
+	    let newStatus = selectElement.value; // 获取选择的状态
+
+	    // 发送更新请求到后端
+	    $.ajax({
+	        url: '/cmsub/update', // 更新接口
+	        type: 'POST',
+	        contentType: 'application/json',
+	        data: JSON.stringify({
+	            subid: subid,
+	            status: newStatus  // 发送选择的状态
+	        }),
+	        success: function(response) {
+	            alert("申请记录已更新！");
+	            loadApplications(currentPage); // 刷新表格数据
+	        },
+	        error: function() {
+	            alert("更新失败，请重试！");
+	        }
+	    });
+	}
+
+
+    // 退出登录功能
+    function logout() {
+        document.cookie = "isLoggedIn=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
+        document.cookie = "username=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
+        window.location.href = "/index.html"; // 跳转到登录页面
+    }
+
+    // 显示用户问候信息
+    function showGreeting() {
+        let cookies = document.cookie.split('; ');
+        let username = cookies.find(cookie => cookie.startsWith('username='));
+
+        if (username) {
+            let usernameValue = username.split('=')[1];
+            $("#greeting").text(`${usernameValue}，你好！`);
+        }
+    }
+
+    // 检查用户是否已登录
+    async function checkLogin() {
+        let cookies = document.cookie.split('; ');
+        let isLoggedIn = cookies.find(cookie => cookie.startsWith('isLoggedIn='));
+        let usernameCookie = cookies.find(cookie => cookie.startsWith('username='));
+
+        if (!isLoggedIn) {
+            window.location.href = "/index.html";
+        } else {
+            let usernameValue = usernameCookie ? usernameCookie.split('=')[1] : null;
+			// 如果是 admin，显示 "用户管理" 链接
+			if (usernameValue === "admin") {
+				document.getElementById('user-management-link').style.display = "inline-block";
+			}
+            // 调用后端接口，检查用户的 authority 是否为 2
+            if (usernameValue === "admin" || await checkUserAuthority(usernameValue)) {
+                console.log("显示操作列");
+                window.isAdmin = true;  // admin 或者 authority 2 用户显示操作列
+                document.getElementById('operation-column').style.display = "table-cell";  // 显示“操作”列
+            } else {
+                console.log("隐藏操作列");
+                window.isAdmin = false; // 其他用户不显示操作列
+                document.getElementById('operation-column').style.display = "none";  // 隐藏“操作”列
+            }
+        }
+    }
+
+    // 检查用户的 authority 是否为 2
+    async function checkUserAuthority(username) {
+        return new Promise((resolve, reject) => {
+            $.get(`/cmusr/search/${username}`, function(data) {
+                if (data && data.authority === 2) {
+                    resolve(true);  // 如果 authority 为 2，返回 true
+                } else {
+                    resolve(false);  // 否则返回 false
+                }
+            }).fail(function() {
+				console.log("123")
+                reject(false);  // 如果请求失败，返回 false
+            });
+        });
+    }
+
+</script>
+
+
+
+</body>
+</html>

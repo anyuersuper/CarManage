@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>提交申请</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        /* 全局样式 */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f7fa;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        /* 页面容器 */
+        .container {
+            background-color: white;
+            width: 100%;
+            max-width: 500px;
+            border-radius: 16px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 26px;
+            margin-bottom: 30px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 16px;
+            color: #555;
+            margin-bottom: 8px;
+        }
+
+        /* 处理多行文本输入框 */
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+            resize: vertical;
+            min-height: 100px; /* 初始高度 */
+            max-height: 200px; /* 最大高度 */
+        }
+
+        .form-group button {
+            width: 100%;
+            padding: 14px;
+            background-color: #007bff;
+            color: white;
+            font-size: 18px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .form-group button:hover {
+            background-color: #0056b3;
+            transform: translateY(-3px);
+        }
+
+        /* 错误消息 */
+        .error-message {
+            margin-top: 15px;
+            color: red;
+            font-size: 14px;
+        }
+
+        /* 导航栏 */
+        .navbar {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 18px;
+            color: #007bff;
+            cursor: pointer;
+        }
+
+        .navbar:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 返回按钮 -->
+    <div class="navbar" onclick="window.history.back()">← 返回</div>
+
+    <!-- 页面主要内容 -->
+    <div class="container">
+        <h1>添加申请记录</h1>
+        <form id="add-sub-form">
+            <div class="form-group">
+                <label for="content">申请内容</label>
+                <textarea id="content" name="content" placeholder="请输入申请内容" required></textarea>
+            </div>
+            <div class="form-group">
+                <button type="submit">提交申请</button>
+            </div>
+            <div class="error-message" id="error-message" style="display: none;"></div>
+        </form>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            $('#add-sub-form').on('submit', function(e) {
+                e.preventDefault(); // 阻止表单默认提交行为
+
+                let content = $('#content').val();
+
+                let newSub = {
+                    content: content
+                };
+
+                // 发送 POST 请求到后端
+                $.ajax({
+                    url: '/cmsub/add',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(newSub),
+                    success: function(response) {
+                        if (response === 1) {
+                            alert("申请记录已添加！");
+                            $('#add-sub-form')[0].reset();
+                        } else {
+                            $('#error-message').text("添加申请记录失败，请重试！").show();
+                        }
+                    },
+                    error: function() {
+                        $('#error-message').text("添加申请记录失败，请重试！").show();
+                    }
+                });
+            });
+        });
+    </script>
+
+</body>
+</html>
