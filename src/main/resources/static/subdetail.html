@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subdetail 详情</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+        }
+        .back-button {
+            display: inline-block;
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .back-button:hover {
+            background-color: #0056b3;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .content {
+            margin-top: 20px;
+        }
+        .image-gallery img {
+            width: 100%;
+            max-width: 300px;
+            margin: 10px 0;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 返回按钮 -->
+    <a href="submanage.html" class="back-button">← 返回</a>
+
+    <div class="container">
+        <h2>Subdetail 详情</h2>
+        
+        <div class="content">
+            <p><strong>Sub ID:</strong> <span id="subid"></span></p>
+            <p><strong>Car ID:</strong> <span id="carid"></span></p>
+            <p><strong>内容:</strong> <span id="content"></span></p>
+
+            <div class="image-gallery">
+                <h3>图片</h3>
+                <img id="img1" src="" alt="图片1">
+                <img id="img2" src="" alt="图片2">
+            </div>
+        </div>
+    </div>
+
+	<script>
+	    // 获取 URL 中的 subid 参数
+	    const urlParams = new URLSearchParams(window.location.search);
+	    const subid = urlParams.get('subid'); // 获取 subid 参数
+
+	    // 使用 subid 加载对应的详情数据（实际开发中可以通过 AJAX 获取）
+	    function loadSubdetail(subid) {
+	        $.ajax({
+	            url: `/getSubdetail/${subid}`, // 假设后端接口是 /getSubdetail/{subid}
+	            type: 'GET',
+	            success: function(data) {
+	                // 解析返回的数据
+	                if (data) {
+	                    document.getElementById("subid").innerText = data.subid;
+	                    document.getElementById("carid").innerText = data.carid;
+	                    document.getElementById("content").innerText = data.content;
+	                    // 如果后续需要展示图片，可以解开以下代码
+	                    // document.getElementById("img1").src = data.images[0];
+	                    // document.getElementById("img2").src = data.images[1];
+	                } else {
+	                    alert("未找到相关的详细信息");
+	                }
+	            },
+	            error: function() {
+	                alert("加载数据失败，请稍后再试！");
+	            }
+	        });
+	    }
+
+	    // 页面加载时调用
+	    window.onload = function() {
+	        if (subid) {
+	            loadSubdetail(subid);
+	        } else {
+	            alert("未找到相应的申请ID");
+	        }
+	    };
+	</script>
+
+
+
+</body>
+</html>

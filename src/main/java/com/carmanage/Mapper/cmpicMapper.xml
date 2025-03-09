@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.carmanage.Mapper.cmpicMapper">
+  <resultMap id="BaseResultMap" type="com.carmanage.dao.cmpic">
+    <id column="picid" jdbcType="INTEGER" property="picid" />
+    <result column="subid" jdbcType="INTEGER" property="subid" />
+    <result column="filepath" jdbcType="VARCHAR" property="filepath" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    picid, subid, filepath
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from cm_pic
+    where picid = #{picid,jdbcType=INTEGER}
+  </select>
+  <select id="selectBySubid" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from cm_pic
+    where subid = #{subid,jdbcType=INTEGER}
+  </select>
+
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from cm_pic
+    where picid = #{picid,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.carmanage.dao.cmpic">
+    insert into cm_pic (picid, subid, filepath
+      )
+    values (#{picid,jdbcType=INTEGER}, #{subid,jdbcType=INTEGER}, #{filepath,jdbcType=VARCHAR}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.carmanage.dao.cmpic">
+    insert into cm_pic
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="picid != null">
+        picid,
+      </if>
+      <if test="subid != null">
+        subid,
+      </if>
+      <if test="filepath != null">
+        filepath,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="picid != null">
+        #{picid,jdbcType=INTEGER},
+      </if>
+      <if test="subid != null">
+        #{subid,jdbcType=INTEGER},
+      </if>
+      <if test="filepath != null">
+        #{filepath,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.carmanage.dao.cmpic">
+    update cm_pic
+    <set>
+      <if test="subid != null">
+        subid = #{subid,jdbcType=INTEGER},
+      </if>
+      <if test="filepath != null">
+        filepath = #{filepath,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where picid = #{picid,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.carmanage.dao.cmpic">
+    update cm_pic
+    set subid = #{subid,jdbcType=INTEGER},
+      filepath = #{filepath,jdbcType=VARCHAR}
+    where picid = #{picid,jdbcType=INTEGER}
+  </update>
+</mapper>

@@ -169,6 +169,48 @@
 		    background-color: #cccccc;
 		    cursor: not-allowed;
 		}
+		
+		
+		/* 按钮容器样式 */
+		.button-container {
+		    display: flex;
+		    gap: 10px; /* 按钮之间的间距 */
+		    justify-content: flex-start; /* 按钮左对齐 */
+		}
+
+		/* 修改按钮 */
+		.btn-edit {
+		    padding: 6px 12px;
+		    margin: 3px;
+		    background-color: #28a745;
+		    color: white;
+		    border: none;
+		    border-radius: 4px;
+		    cursor: pointer;
+		    font-size: 14px;
+		}
+
+		.btn-edit:hover {
+		    background-color: #218838;
+		}
+
+		/* 查看按钮 */
+		.btn-view {
+		    padding: 6px 12px;
+		    margin: 3px;
+		    background-color: #007bff;
+		    color: white;
+		    border: none;
+		    border-radius: 4px;
+		    cursor: pointer;
+		    font-size: 14px;
+		}
+
+		.btn-view:hover {
+		    background-color: #0056b3;
+		}
+
+
     </style>
 </head>
 <body>
@@ -210,7 +252,7 @@
                     <th>用户ID</th>
                     <th>申请内容</th>
                     <th>状态</th>
-                    <th id="operation-column" style="display:none;">操作</th> <!-- 操作列默认隐藏 -->
+                    <th id="operation-column" >操作</th> <!-- 操作列默认隐藏 -->
                 </tr>
             </thead>
             <tbody>
@@ -232,11 +274,11 @@
     let filteredApplications = []; // 存储过滤后的申请数据
     let allApplications = []; // 存储所有申请数据，便于搜索
 
-	// 加载申请数据
+	// 修改 loadApplications 函数，添加普通用户的操作逻辑
 	function loadApplications(page) {
 	    $.get("/cmsub/mysub", function(data) {
 	        allApplications = data; // 存储所有申请数据
-	        filterApplications(); // 根据当前搜索条件过滤应用
+	        filterApplications(); // 根据当前搜索条件过滤申请
 	        let start = (page - 1) * itemsPerPage;
 	        let end = start + itemsPerPage;
 	        let applicationsToShow = filteredApplications.slice(start, end);
@@ -246,22 +288,36 @@
 	        applicationsToShow.forEach(function(application) {
 	            let content = application.content.length > 100 ? application.content.substring(0, 100) + '...' : application.content;
 	            let row = `<tr>
-	                        <td>${application.subid}</td>
-	                        <td>${application.uid}</td>
-	                        <td class="content">${content}</td>
-	                        <td>
-	                            <select>
-	                                <option ${application.status === "审批中" ? "selected" : ""}>审批中</option>
-	                                <option ${application.status === "通过" ? "selected" : ""}>通过</option>
-	                                <option ${application.status === "未通过" ? "selected" : ""}>未通过</option>
-	                                <option ${application.status === "打回" ? "selected" : ""}>打回</option>
-	                            </select>
-	                        </td>
-	                        ${window.isAdmin ? `<td><button onclick="editApplication(${application.subid})">修改</button></td>` : ''}
-	                      </tr>`;
+	                <td>${application.subid}</td> <!-- 去掉了<a>标签 -->
+	                <td>${application.uid}</td>
+	                <td class="content">${content}</td>
+	                <td>
+	                    <select>
+	                        <option ${application.status === "审批中" ? "selected" : ""}>审批中</option>
+	                        <option ${application.status === "通过" ? "selected" : ""}>通过</option>
+	                        <option ${application.status === "未通过" ? "selected" : ""}>未通过</option>
+	                        <option ${application.status === "打回" ? "selected" : ""}>打回</option>
+	                    </select>
+	                </td>
+	                ${window.isAdmin || window.isAuthority2 ? `
+	                    <td>
+	                        <div class="button-container">
+	                            <button class="btn btn-edit" onclick="editApplication(${application.subid})">修改</button>
+	                            <button class="btn btn-view" onclick="viewApplication(${application.subid})">查看</button>
+	                        </div>
+	                    </td>
+	                ` : `
+	                    <td>
+	                        <div class="button-container">
+	                            <button class="btn btn-view" onclick="viewApplication(${application.subid})">查看</button>
+	                        </div>
+	                    </td>
+	                `}
+	            </tr>`;
+
 	            tbody.append(row);
 	        });
-
+	        
 	        // 添加点击事件来显示完整内容
 	        $(".content").click(function() {
 	            let content = $(this).text().trim(); // 获取该行的申请内容
@@ -271,6 +327,13 @@
 	        updatePagination(page);
 	    });
 	}
+
+
+	// 查看按钮点击事件，跳转到 subdetail.html 页面
+	function viewApplication(subid) {
+	    window.location.href = `/subdetail.html?subid=${subid}`;
+	}
+
 
 
 
@@ -358,32 +421,45 @@
         }
     }
 
-    // 检查用户是否已登录
-    async function checkLogin() {
-        let cookies = document.cookie.split('; ');
-        let isLoggedIn = cookies.find(cookie => cookie.startsWith('isLoggedIn='));
-        let usernameCookie = cookies.find(cookie => cookie.startsWith('username='));
+	async function checkLogin() {
+	    let cookies = document.cookie.split('; ');
+	    let isLoggedIn = cookies.find(cookie => cookie.startsWith('isLoggedIn='));
+	    let usernameCookie = cookies.find(cookie => cookie.startsWith('username='));
 
-        if (!isLoggedIn) {
-            window.location.href = "/index.html";
-        } else {
-            let usernameValue = usernameCookie ? usernameCookie.split('=')[1] : null;
-			// 如果是 admin，显示 "用户管理" 链接
-			if (usernameValue === "admin") {
-				document.getElementById('user-management-link').style.display = "inline-block";
-			}
-            // 调用后端接口，检查用户的 authority 是否为 2
-            if (usernameValue === "admin" || await checkUserAuthority(usernameValue)) {
-                console.log("显示操作列");
-                window.isAdmin = true;  // admin 或者 authority 2 用户显示操作列
-                document.getElementById('operation-column').style.display = "table-cell";  // 显示“操作”列
-            } else {
-                console.log("隐藏操作列");
-                window.isAdmin = false; // 其他用户不显示操作列
-                document.getElementById('operation-column').style.display = "none";  // 隐藏“操作”列
-            }
-        }
-    }
+	    if (!isLoggedIn) {
+	        window.location.href = "/index.html";
+	    } else {
+	        let usernameValue = usernameCookie ? usernameCookie.split('=')[1] : null;
+	        
+	        // 判断是否是admin
+	        if (usernameValue === "admin") {
+	            document.getElementById('user-management-link').style.display = "inline-block";
+	            window.isAdmin = true;  // 管理员
+	        } else {
+	            window.isAdmin = false;  // 非管理员
+	        }
+
+	        // 如果是普通用户或其他权限为2的用户，判断authority
+	        if (usernameValue !== "admin" && await checkUserAuthority(usernameValue)) {
+	            window.isAuthority2 = true;  // authority 为 2 的用户
+	        } else {
+	            window.isAuthority2 = false;  // 非权限2用户
+	        }
+
+	        // 调用后端接口，检查用户的 authority 是否为 2
+	        if (window.isAdmin || window.isAuthority2) {
+	            console.log("显示操作列");
+	            window.isAdmin = true;  // admin 或者 authority 2 用户显示操作列
+	            document.getElementById('operation-column').style.display = "table-cell";  // 显示“操作”列
+	        } else {
+	            console.log("隐藏操作列");
+	            window.isAdmin = false; // 其他用户不显示操作列
+	            window.isAuthority2 = false;  // 其他用户没有权限
+	            
+	        }
+	    }
+	}
+
 
     // 检查用户的 authority 是否为 2
     async function checkUserAuthority(username) {
@@ -395,7 +471,6 @@
                     resolve(false);  // 否则返回 false
                 }
             }).fail(function() {
-				console.log("123")
                 reject(false);  // 如果请求失败，返回 false
             });
         });
