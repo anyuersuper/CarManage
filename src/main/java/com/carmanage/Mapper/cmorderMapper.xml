@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.carmanage.Mapper.cmorderMapper">
+  <resultMap id="BaseResultMap" type="com.carmanage.dao.cmorder">
+    <id column="orderid" jdbcType="INTEGER" property="orderid" />
+    <result column="uid" jdbcType="INTEGER" property="uid" />
+    <result column="money" jdbcType="INTEGER" property="money" />
+    <result column="starttime" jdbcType="TIMESTAMP" property="starttime" />
+    <result column="finishedtime" jdbcType="TIMESTAMP" property="finishedtime" />
+    <result column="status" jdbcType="VARCHAR" property="status" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    orderid, uid, money, starttime, finishedtime, status
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from cm_order
+    where orderid = #{orderid,jdbcType=INTEGER}
+  </select>
+  <select id="selectByUid" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+  select
+  <include refid="Base_Column_List" />
+  from cm_order
+  where uid = #{uid,jdbcType=INTEGER}
+  </select>
+
+  <select id="selectAll" resultMap="BaseResultMap">
+	select
+	<include refid="Base_Column_List" />
+	from cm_order
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from cm_order
+    where orderid = #{orderid,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.carmanage.dao.cmorder">
+    insert into cm_order (orderid, uid, money, 
+      starttime, finishedtime, status
+      )
+    values (#{orderid,jdbcType=INTEGER}, #{uid,jdbcType=INTEGER}, #{money,jdbcType=INTEGER}, 
+      #{starttime,jdbcType=TIMESTAMP}, #{finishedtime,jdbcType=TIMESTAMP}, #{status,jdbcType=VARCHAR}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.carmanage.dao.cmorder">
+    insert into cm_order
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="orderid != null">
+        orderid,
+      </if>
+      <if test="uid != null">
+        uid,
+      </if>
+      <if test="money != null">
+        money,
+      </if>
+      <if test="starttime != null">
+        starttime,
+      </if>
+      <if test="finishedtime != null">
+        finishedtime,
+      </if>
+      <if test="status != null">
+        status,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="orderid != null">
+        #{orderid,jdbcType=INTEGER},
+      </if>
+      <if test="uid != null">
+        #{uid,jdbcType=INTEGER},
+      </if>
+      <if test="money != null">
+        #{money,jdbcType=INTEGER},
+      </if>
+      <if test="starttime != null">
+        #{starttime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="finishedtime != null">
+        #{finishedtime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="status != null">
+        #{status,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.carmanage.dao.cmorder">
+    update cm_order
+    <set>
+      <if test="uid != null">
+        uid = #{uid,jdbcType=INTEGER},
+      </if>
+      <if test="money != null">
+        money = #{money,jdbcType=INTEGER},
+      </if>
+      <if test="starttime != null">
+        starttime = #{starttime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="finishedtime != null">
+        finishedtime = #{finishedtime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="status != null">
+        status = #{status,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where orderid = #{orderid,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.carmanage.dao.cmorder">
+    update cm_order
+    set uid = #{uid,jdbcType=INTEGER},
+      money = #{money,jdbcType=INTEGER},
+      starttime = #{starttime,jdbcType=TIMESTAMP},
+      finishedtime = #{finishedtime,jdbcType=TIMESTAMP},
+      status = #{status,jdbcType=VARCHAR}
+    where orderid = #{orderid,jdbcType=INTEGER}
+  </update>
+</mapper>

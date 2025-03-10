@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 
 @RestController
-@RequestMapping("/pic")
+@RequestMapping("/cmpic")
 public class picop {
 	
 	private final cmpicMapper cmpicMapper;

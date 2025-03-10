@@ -274,10 +274,8 @@
 		        method: "GET",
 		        dataType: "json",
 		        success: function (data) {
-		            allApplications = data;  // 保存所有工单数据
-		            if (filteredApplications.length === 0) {  // 如果没有搜索条件，加载所有数据
-		                filteredApplications = allApplications;
-		            }
+		            allApplications = data; // 保存所有工单数据
+		            filteredApplications = allApplications; // 直接使用所有数据
 		            renderTable(filteredApplications); // 渲染工单表格
 		            updatePagination(page); // 更新分页
 		        },
@@ -287,19 +285,25 @@
 		    });
 		}
 
+		// 格式化时间为中国时间（CST）
+		function formatToChinaTime(date) {
+		    return new Date(date).toLocaleString("zh-CN", { timeZone: "Asia/Shanghai" });
+		}
+
 		// 渲染工单表格
 		function renderTable(data) {
 		    let tbody = $("#workorder-table tbody");
 		    tbody.empty();
 
-		    data.forEach(function (application) {
-		        // 将时间字符串转化为中国时区时间
-		        const startTime = new Date(application.starttime);
-		        const finishedTime = new Date(application.finishedtime);
-		        
-		        // 转换为中国时间（UTC+8）
-		        const startTimeCST = startTime.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' });
-		        const finishedTimeCST = finishedTime.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' });
+		    // 计算当前页的数据范围
+		    const start = (currentPage - 1) * itemsPerPage;
+		    const end = start + itemsPerPage;
+		    const pageData = data.slice(start, end);
+
+		    pageData.forEach(function (application) {
+		        // 解析并格式化时间为中国时间
+		        const startTime = application.starttime ? formatToChinaTime(application.starttime) : "";
+		        const finishedTime = application.finishedtime ? formatToChinaTime(application.finishedtime) : "";
 
 		        let statusOptions = `
 		            <select class="status-dropdown">
@@ -307,21 +311,20 @@
 		                <option value="已完成" ${application.status === '已完成' ? 'selected' : ''}>已完成</option>
 		            </select>
 		        `;
-		        
-		        let row = `<tr>
+
+		        let row = `<tr data-workorderid="${application.workorderid}">
 		            <td>${application.workorderid}</td>
 		            <td>${application.uid}</td>
 		            <td>${application.cmuid}</td>
-		            <td>${startTimeCST}</td>
-		            <td>${finishedTimeCST}</td>
+		            <td>${startTime}</td>
+		            <td>${finishedTime}</td>
 		            <td>${statusOptions}</td>
-					<td>
-					    <div class="button-container">
-					        <button class="btn btn-edit" onclick="editApplication(${application.workorderid})">修改</button>
-					        <button class="btn btn-view" onclick="deleteApplication(${application.workorderid})">删除</button>  <!-- 删除按钮 -->
-					    </div>
-					</td>
-
+		            <td>
+		                <div class="button-container">
+		                    <button class="btn btn-edit" onclick="editApplication(${application.workorderid})">修改</button>
+		                    <button class="btn btn-view" onclick="deleteApplication(${application.workorderid})">删除</button>
+		                </div>
+		            </td>
 		        </tr>`;
 
 		        tbody.append(row);
@@ -329,23 +332,78 @@
 		}
 
 
-		// 根据搜索条件过滤工单数据
-		function filterApplications() {
-		    const searchField = $("#search-field").val(); // 获取选择的字段
-		    const searchText = $("#search-input").val().toLowerCase(); // 获取输入框的内容
+		// 修改按钮点击事件
+		function editApplication(workorderid) {
+		    const row = $(`#workorder-table tr[data-workorderid="${workorderid}"]`);
 
-		    // 过滤工单数据
-		    filteredApplications = allApplications.filter(function(application) {
-		        return application[searchField] && application[searchField].toString().toLowerCase().includes(searchText);
+		    if (row.length === 0) {
+		        alert("未找到对应的工单行");
+		        return;
+		    }
+
+		    const uid = row.find("td").eq(1).text().trim();
+		    const cmuid = row.find("td").eq(2).text().trim();
+		    let starttime = row.find("td").eq(3).text().trim();
+		    let finishedtime = row.find("td").eq(4).text().trim();
+		    const status = row.find("select").val();
+
+		    // 判断如果status是已完成，则不需要输入金额
+		    let money = 0;
+		    if (status !== "已完成") {
+		        money = prompt("请输入金额：");
+		        if (money === null || isNaN(money) || money <= 0) {
+		            alert("请输入有效的金额！");
+		            return;
+		        }
+		    }
+
+		    // 确保时间格式正确
+		    starttime = starttime ? new Date(starttime).toISOString().slice(0, 19) : null;
+		    finishedtime = finishedtime ? new Date(finishedtime).toISOString().slice(0, 19) : null;
+
+		    const updatedWorkOrder = {
+		        workorderid,
+		        uid,
+		        cmuid,
+		        starttime,
+		        finishedtime,
+		        status
+		    };
+
+		    // 发起 AJAX 请求更新工单，并传递金额
+		    $.ajax({
+		        url: `/cmworkorder/update/${money}`,
+		        method: 'POST',
+		        contentType: 'application/json',
+		        data: JSON.stringify(updatedWorkOrder),
+		        success: function(response) {
+		            if (response === 1) {
+		                alert("工单更新成功！");
+		                loadApplications(currentPage);
+		            } else {
+		                alert("工单更新失败！");
+		            }
+		        },
+		        error: function(xhr) {
+		            alert("请求失败：" + xhr.status + " " + xhr.statusText);
+		        }
 		    });
 		}
 
+
+
 		// 搜索工单
 		function searchApplications() {
-		    currentPage = 1; // 每次搜索时，页码重新置为第一页
-		    filterApplications(); // 过滤工单数据
-		    renderTable(filteredApplications); // 渲染过滤后的数据
-		    updatePagination(currentPage); // 更新分页按钮
+		    const searchField = $("#search-field").val();
+		    const searchText = $("#search-input").val().toLowerCase();
+
+		    filteredApplications = allApplications.filter(function(application) {
+		        return application[searchField] && application[searchField].toString().toLowerCase().includes(searchText);
+		    });
+
+		    currentPage = 1;
+		    renderTable(filteredApplications);
+		    updatePagination(currentPage);
 		}
 
 		// 更新分页按钮状态
@@ -360,86 +418,47 @@
 		    const newPage = currentPage + direction;
 		    if (newPage < 1 || newPage > Math.ceil(filteredApplications.length / itemsPerPage)) return;
 		    currentPage = newPage;
-		    loadApplications(currentPage);
+		    renderTable(filteredApplications);
+		    updatePagination(currentPage);
 		}
-
-		// 修改按钮点击事件
-		function editApplication(workorderid) {
-		    alert(`修改工单ID: ${workorderid}`);
-		}
-
-		// 删除按钮点击事件
-		function deleteApplication(workorderid) {
-		    // 提示用户确认删除
-		    const isConfirmed = confirm(`确定要删除工单ID: ${workorderid} 吗？`);
-
-		    // 如果用户点击“确定”
-		    if (isConfirmed) {
-		        // 发送删除请求
-		        $.ajax({
-		            url: `/cmworkorder/delete/${workorderid}`,  // 发送 GET 请求到后端删除接口
-		            method: "GET",
-		            success: function(response) {
-		                // 删除成功后
-		                alert(`工单ID: ${workorderid} 删除成功！`);
-		                
-		                // 从 allApplications 和 filteredApplications 中移除删除的工单
-		                allApplications = allApplications.filter(application => application.workorderid !== workorderid);
-		                filteredApplications = filteredApplications.filter(application => application.workorderid !== workorderid);
-
-		                // 重新加载工单数据
-		                loadApplications(currentPage);  // 重新加载当前页的工单数据
-		            },
-		            error: function() {
-		                alert("删除工单失败！");
-		            }
-		        });
-		    }
-		}
-
-
-
 
 		// 退出登录功能
 		function logout() {
-		    // 删除 cookies
+		    // 删除 cookies，确保过期时间已设置为过去的时间
 		    document.cookie = "isLoggedIn=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
 		    document.cookie = "username=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
-		    // 跳转到登录页面
-		    window.location.href = "/index.html";
+
+		    // 强制跳转到登录页面
+		    window.location.replace("/index.html");  // 替换当前页面，防止后退返回
 		}
+
 
 		// 页面初始化
 		$(document).ready(function () {
-		    checkLogin();  // 检查登录状态
-		    loadApplications(currentPage);  // 加载工单数据
+		    checkLogin();
+		    loadApplications(currentPage);
 		});
 
 		// 登录状态检查
 		function checkLogin() {
-		    // 获取所有的 cookies
 		    let cookies = document.cookie.split('; ');
-
-		    // 查找 isLoggedIn 和 username cookie
 		    let isLoggedIn = cookies.find(cookie => cookie.startsWith('isLoggedIn='));
 		    let username = cookies.find(cookie => cookie.startsWith('username='));
 
-		    // 如果没有登录，跳转到登录页面
 		    if (!isLoggedIn) {
-		        window.location.href = "/index.html";  // 跳转到登录页面
+		        window.location.href = "/index.html";
 		    } else {
-		        // 如果已登录，显示用户名
 		        if (username) {
 		            let usernameValue = username.split('=')[1];
 		            document.getElementById('greeting').innerText = `${usernameValue}，你好！`;
 
-		            // 如果是 admin，显示 "用户管理" 链接
 		            if (usernameValue === "admin") {
 		                document.getElementById('user-management-link').style.display = "inline-block";
 		            }
 		        }
 		    }
 		}
+
 
 	</script>
 

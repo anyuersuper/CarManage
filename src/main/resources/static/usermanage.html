@@ -293,177 +293,197 @@
     </div>
 
     <script>
-        let users = [];
-        let currentPage = 1;
-        const pageSize = 10;
+    let users = [];
+    let currentPage = 1;
+    const pageSize = 10;
 
-        function fetchUsers() {
-            $.get("/cmusr/all", function(data) {
-                users = data;
-                renderTable();
-            });
-        }
+    // 检查是否登录（即检查 isLoggedIn cookie 是否存在）
+    function checkLogin() {
+        let cookies = document.cookie.split('; ');
+        let isLoggedIn = cookies.find(cookie => cookie.startsWith('isLoggedIn='));
+        let username = cookies.find(cookie => cookie.startsWith('username='));
 
-        function searchUsers() {
-            let searchField = $("#searchField").val();
-            let searchValue = $("#searchInput").val().trim().toLowerCase();
+        if (!isLoggedIn) {
+            // 如果没有登录，跳转到登录页面
+            window.location.href = "/index.html";
+        } else {
+            // 如果已登录，显示用户名
+            if (username) {
+                let usernameValue = username.split('=')[1];
+                document.getElementById('greeting').innerText = `${usernameValue}，你好！`;
 
-            if (searchValue === "") {
-                renderTable();
-                return;
+                // 如果是 admin，显示 "用户管理" 链接
+                if (usernameValue === "admin") {
+                    document.getElementById('user-management-link').style.display = "inline-block";
+                }
             }
+        }
+    }
 
-            let filteredUsers = users.filter(user => {
-                let fieldValue = user[searchField].toString().toLowerCase();
-                return fieldValue.includes(searchValue);
-            });
+    // 退出登录功能
+    function logout() {
+        // 删除 cookies
+        document.cookie = "isLoggedIn=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
+        document.cookie = "username=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
+        // 跳转到登录页面
+        window.location.href = "/index.html";
+    }
 
-            renderTable(filteredUsers);
+    // 页面加载时检查登录状态
+    checkLogin();
+
+    // 获取用户数据
+    function fetchUsers() {
+        $.get("/cmusr/all", function(data) {
+            users = data;
+            renderTable();
+        });
+    }
+
+    // 搜索用户
+    function searchUsers() {
+        let searchField = $("#searchField").val();
+        let searchValue = $("#searchInput").val().trim().toLowerCase();
+
+        if (searchValue === "") {
+            renderTable();
+            return;
         }
 
-        function renderTable(filteredUsers = null) {
-            $("#user-table").empty();
-            let usersToRender = filteredUsers || users;
-            let start = (currentPage - 1) * pageSize;
-            let end = start + pageSize;
-            let pageUsers = usersToRender.slice(start, end);
+        let filteredUsers = users.filter(user => {
+            let fieldValue = user[searchField].toString().toLowerCase();
+            return fieldValue.includes(searchValue);
+        });
 
-            pageUsers.forEach(user => {
-                let row = `
-                    <tr>
-                        <td>${user.uid}</td>
-                        <td>${user.username}</td>
-                        <td><input type="password" class="input-password" value="${user.password}" data-username="${user.username}"></td>
-                        <td>
-                            <select class="input-authority" data-username="${user.username}">
-                                ${[0, 1, 2, 3, 4].map(num => `<option value="${num}" ${user.authority == num ? 'selected' : ''}>${num}</option>`).join('')}
-                            </select>
-                        </td>
-                        <td>
-                            <button class="btn btn-edit" onclick="editUser('${user.username}')">修改</button>
-                            <button class="btn btn-delete" onclick="deleteUser('${user.username}')">删除</button>
-                        </td>
-                    </tr>
-                `;
-                $("#user-table").append(row);
-            });
+        renderTable(filteredUsers);
+    }
 
-            $("#pageInfo").text(`第 ${currentPage} 页 / 共 ${Math.ceil(usersToRender.length / pageSize)} 页`);
-            $("#prevPage").prop("disabled", currentPage === 1);
-            $("#nextPage").prop("disabled", currentPage * pageSize >= usersToRender.length);
-        }
+    // 渲染用户表格
+    function renderTable(filteredUsers = null) {
+        $("#user-table").empty();
+        let usersToRender = filteredUsers || users;
+        let start = (currentPage - 1) * pageSize;
+        let end = start + pageSize;
+        let pageUsers = usersToRender.slice(start, end);
 
-        function editUser(username) {
-            let newPassword = $(`.input-password[data-username='${username}']`).val();
-            let newAuthority = $(`.input-authority[data-username='${username}']`).val();
-            let uid = $(`tr:contains('${username}') td:first-child`).text(); // 获取当前用户名的 UID
+        pageUsers.forEach(user => {
+            let row = `
+                <tr>
+                    <td>${user.uid}</td>
+                    <td>${user.username}</td>
+                    <td><input type="password" class="input-password" value="${user.password}" data-username="${user.username}"></td>
+                    <td>
+                        <select class="input-authority" data-username="${user.username}">
+                            ${[0, 1, 2, 3, 4].map(num => `<option value="${num}" ${user.authority == num ? 'selected' : ''}>${num}</option>`).join('')}
+                        </select>
+                    </td>
+                    <td>
+                        <button class="btn btn-edit" onclick="editUser('${user.username}')">修改</button>
+                        <button class="btn btn-delete" onclick="deleteUser('${user.username}')">删除</button>
+                    </td>
+                </tr>
+            `;
+            $("#user-table").append(row);
+        });
 
-            let updatedUser = { uid, username, password: newPassword, authority: parseInt(newAuthority) };
+        $("#pageInfo").text(`第 ${currentPage} 页 / 共 ${Math.ceil(usersToRender.length / pageSize)} 页`);
+        $("#prevPage").prop("disabled", currentPage === 1);
+        $("#nextPage").prop("disabled", currentPage * pageSize >= usersToRender.length);
+    }
 
+    // 编辑用户信息
+    function editUser(username) {
+        let newPassword = $(`.input-password[data-username='${username}']`).val();
+        let newAuthority = $(`.input-authority[data-username='${username}']`).val();
+        let uid = $(`tr:contains('${username}') td:first-child`).text(); // 获取当前用户名的 UID
+
+        let updatedUser = { uid, username, password: newPassword, authority: parseInt(newAuthority) };
+
+        $.ajax({
+            url: "/cmusr/update",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify(updatedUser),
+            success: function() {
+                alert("修改成功！");
+                fetchUsers();
+            },
+            error: function() {
+                alert("修改失败！");
+            }
+        });
+    }
+
+    // 删除用户
+    function deleteUser(username) {
+        if (confirm("确定要删除此用户吗？")) {
             $.ajax({
-                url: "/cmusr/update",
-                type: "POST",
-                contentType: "application/json",
-                data: JSON.stringify(updatedUser),
+                url: `/cmusr/delete/${username}`,
+                type: "GET",
                 success: function() {
-                    alert("修改成功！");
+                    alert("删除成功！");
                     fetchUsers();
                 },
                 error: function() {
-                    alert("修改失败！");
+                    alert("删除失败！");
                 }
             });
         }
+    }
 
-        function deleteUser(username) {
-            if (confirm("确定要删除此用户吗？")) {
-                $.ajax({
-                    url: `/cmusr/delete/${username}`,
-                    type: "GET",
-                    success: function() {
-                        alert("删除成功！");
-                        fetchUsers();
-                    },
-                    error: function() {
-                        alert("删除失败！");
-                    }
-                });
-            }
+    // 分页功能
+    $("#prevPage").click(function() {
+        if (currentPage > 1) {
+            currentPage--;
+            renderTable();
+        }
+    });
+
+    $("#nextPage").click(function() {
+        if (currentPage * pageSize < users.length) {
+            currentPage++;
+            renderTable();
+        }
+    });
+
+    // 添加用户
+    function addUser() {
+        var username = $("#newUsername").val().trim();
+        var password = $("#newPassword").val().trim();
+
+        if (!username || !password) {
+            alert("用户名和密码不能为空！");
+            return;
         }
 
-        $("#prevPage").click(function() {
-            if (currentPage > 1) {
-                currentPage--;
-                renderTable();
+        var user = {
+            username: username,
+            password: password
+        };
+
+        $.ajax({
+            url: "/cmusr/register", // 调用register接口
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify(user),
+            success: function(response) {
+                alert(response); // 提示注册成功或失败的消息
+                if (response === "注册成功！") {
+                    fetchUsers(); // 如果注册成功，重新加载用户数据
+                }
+            },
+            error: function() {
+                alert("注册请求失败！");
             }
         });
+    }
 
-        $("#nextPage").click(function() {
-            if (currentPage * pageSize < users.length) {
-                currentPage++;
-                renderTable();
-            }
-        });
+    // 页面加载时获取用户数据
+    $(document).ready(function() {
+        fetchUsers();
+    });
+</script>
 
-        function showGreeting() {
-            let cookies = document.cookie.split('; ');
-            let username = cookies.find(cookie => cookie.startsWith('username='));
-
-            if (username) {
-                let usernameValue = username.split('=')[1];
-                $("#greeting").text(`${usernameValue}，你好！`);
-            }
-        }
-
-        $(document).ready(function() {
-            showGreeting();
-            fetchUsers();
-        });
-		
-		function addUser() {
-		        var username = $("#newUsername").val().trim();
-		        var password = $("#newPassword").val().trim();
-
-		        if (!username || !password) {
-		            alert("用户名和密码不能为空！");
-		            return;
-		        }
-
-		        var user = {
-		            username: username,
-		            password: password
-		        };
-
-		        $.ajax({
-		            url: "/cmusr/register", // 调用register接口
-		            type: "POST",
-		            contentType: "application/json",
-		            data: JSON.stringify(user),
-		            success: function(response) {
-		                alert(response); // 提示注册成功或失败的消息
-		                if (response === "注册成功！") {
-		                    fetchUsers(); // 如果注册成功，重新加载用户数据
-		                }
-		            },
-		            error: function() {
-		                alert("注册请求失败！");
-		            }
-		        });
-		    }
-			// 退出登录功能
-			function logout() {
-			    // 删除 cookies
-			    document.cookie = "isLoggedIn=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
-			    document.cookie = "username=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
-			    // 跳转到登录页面
-			    window.location.href = "/index.html";
-			}
-
-			// 页面加载时检查登录状态
-			checkLogin();			
-			
-		
-    </script>
 
 </body>
 </html>

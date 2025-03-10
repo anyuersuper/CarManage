@@ -1,0 +1,391 @@
+<!DOCTYPE html> 
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>账单管理</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        /* 全局样式 */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f7f8fa;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* 导航栏样式 */
+        .navbar {
+            width: 100%;
+            background-color: #007bff;
+            padding: 15px 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            position: relative;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 500;
+            padding: 10px 20px;
+            border-radius: 30px;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .navbar a:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        .navbar .logout-btn {
+            background-color: #dc3545;
+            position: absolute;
+            right: 20px;
+        }
+
+        .navbar .logout-btn:hover {
+            background-color: #c82333;
+        }
+
+        /* 页面内容 */
+        .container {
+            width: 80%;
+            max-width: 1200px;
+            margin-top: 30px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        #greeting {
+            font-size: 20px;
+            margin-bottom: 30px;
+        }
+
+        /* 搜索框样式 */
+        .search-box {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .search-box select, .search-box input {
+            padding: 8px;
+            width: 250px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .search-box button {
+            padding: 8px 16px;
+            border: 1px solid #007bff;
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .search-box button:hover {
+            background-color: #0056b3;
+        }
+
+        /* 表格样式 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: center;
+            word-wrap: break-word;
+            max-width: 200px;
+        }
+
+        td.content {
+            max-height: 100px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            text-align: left;
+        }
+
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+
+        td select, td button {
+            width: 100%;
+            padding: 5px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        .pagination {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .pagination button {
+            padding: 8px 16px;
+            margin: 0 5px;
+            border: 1px solid #ddd;
+            background-color: #007bff;
+            color: white;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .pagination button:hover {
+            background-color: #0056b3;
+        }
+
+        .pagination button.disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-start;
+        }
+
+        .btn-pay {
+            padding: 6px 12px;
+            margin: 3px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            width: auto;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 导航栏 -->
+    <div class="navbar">
+        <a href="/home.html">首页</a>
+        <a id="user-management-link" href="/usermanage.html" style="display:none;">用户管理</a>
+        <a href="/carmanage.html">车辆管理</a>
+        <a href="/ordermanage.html">账单管理</a>
+        <a href="/workordermanage.html">工单管理</a>
+        <a href="/submanage.html">申请管理</a>
+        <a href="javascript:void(0);" class="logout-btn" onclick="logout()">退出登录</a>
+    </div>
+
+    <!-- 页面主要内容 -->
+    <div class="container">
+        <h1 id="greeting"></h1>
+
+        <!-- 搜索框 -->
+        <div class="search-box">
+            <select id="search-field">
+                <option value="orderid">订单ID</option>
+                <option value="uid">用户ID</option>
+                <option value="status">状态</option>
+            </select>
+            <input type="text" id="search-input" placeholder="请输入搜索内容" />
+            <button onclick="searchApplications()">搜索</button>
+        </div>
+
+        <!-- 账单管理表格 -->
+        <table id="application-table">
+            <thead>
+                <tr>
+                    <th>订单ID</th>
+                    <th>用户ID</th>
+                    <th>金额</th>
+                    <th>开始时间</th>
+                    <th>完成时间</th>
+                    <th>状态</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- 动态生成的账单行 -->
+            </tbody>
+        </table>
+
+        <!-- 分页控件 -->
+        <div class="pagination">
+            <button id="prev-page" onclick="changePage(-1)" class="disabled">上一页</button>
+            <button id="next-page" onclick="changePage(1)">下一页</button>
+        </div>
+    </div>
+
+    <script>
+		const itemsPerPage = 10;
+		let currentPage = 1;
+		let filteredApplications = [];
+
+		// 检查用户登录状态以及身份
+		function checkLogin() {
+		    let cookies = document.cookie.split('; ');
+		    let username = cookies.find(cookie => cookie.startsWith('username='));
+
+		    if (username) {
+		        let usernameValue = username.split('=')[1];
+		        document.getElementById('greeting').innerText = `${usernameValue}，你好！`;
+
+		        // 如果是 admin，显示 "用户管理" 链接
+		        if (usernameValue === "admin") {
+		            document.getElementById('user-management-link').style.display = "inline-block";
+		        }
+		    } else {
+		        // 如果没有登录，跳转到登录页面
+		        window.location.href = "/index.html";
+		    }
+		}
+
+		// 退出登录功能
+		function logout() {
+		    document.cookie = "isLoggedIn=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
+		    document.cookie = "username=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
+		    window.location.href = "/index.html";
+		}
+
+		function loadApplications(page) {
+		    $.ajax({
+		        url: '/cmorder/myorder',
+		        type: 'GET',
+		        success: function (data) {
+		            filteredApplications = data;
+		            const startIndex = (page - 1) * itemsPerPage;
+		            const endIndex = Math.min(startIndex + itemsPerPage, filteredApplications.length);
+		            const applicationsToShow = filteredApplications.slice(startIndex, endIndex);
+
+		            const tbody = $("#application-table tbody");
+		            tbody.empty();
+		            applicationsToShow.forEach(function(application) {
+		                const startTime = new Date(application.starttime).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' });
+		                const finishedTime = new Date(application.finishedtime).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' });
+
+		                const row = `<tr>
+		                    <td>${application.orderid}</td>
+		                    <td>${application.uid}</td>
+		                    <td>${application.money}</td>
+		                    <td>${startTime}</td>
+		                    <td>${finishedTime}</td>
+		                    <td>
+		                        <select>
+		                            <option ${application.status === "处理中" ? "selected" : ""}>处理中</option>
+		                            <option ${application.status === "已完成" ? "selected" : ""}>已完成</option>
+		                        </select>
+		                    </td>
+		                    <td><button class="btn-pay" onclick="pay('${application.orderid}', '${application.uid}', '${application.money}', '${startTime}', '${finishedTime}', '${application.status}')">支付</button></td>
+		                </tr>`;
+		                tbody.append(row);
+		            });
+
+		            updatePagination(page);
+		        },
+		        error: function (error) {
+		            console.error("Error fetching data", error);
+		        }
+		    });
+		}
+
+		// 支付按钮的点击事件
+		function pay(orderid, uid, money, starttime, finishedtime, status) {
+		    const cmorderObject = {
+		        orderid: orderid,
+		        uid: uid,
+		        money: money,
+		        starttime: new Date(starttime).toISOString(),  // 格式化日期
+		        finishedtime: new Date(finishedtime).toISOString(),  // 格式化日期
+		        status: status === "已完成" ? "已完成" : "处理中"
+		    };
+
+		    $.ajax({
+		        url: '/cmorder/pay',
+		        type: 'POST',
+		        contentType: 'application/json',
+		        data: JSON.stringify(cmorderObject),  // 传递格式化后的 cmorder 对象
+		        success: function(response) {
+		            alert("支付成功！");
+		            loadApplications(currentPage);
+		        },
+		        error: function(error) {
+		            console.error("Error processing payment", error);
+		            alert("支付失败，请重试！");
+		        }
+		    });
+		}
+
+
+		// 更新分页控件
+		function updatePagination(page) {
+		    const totalPages = Math.ceil(filteredApplications.length / itemsPerPage);
+		    $("#prev-page").toggleClass('disabled', page <= 1);
+		    $("#next-page").toggleClass('disabled', page >= totalPages);
+		}
+
+		// 翻页功能
+		function changePage(direction) {
+		    currentPage += direction;
+		    loadApplications(currentPage);
+		}
+
+		// 搜索功能
+		function searchApplications() {
+		    const searchField = document.getElementById('search-field').value;
+		    const searchInput = document.getElementById('search-input').value.toLowerCase();
+
+		    // 根据搜索条件过滤数据
+		    const filteredResults = filteredApplications.filter(function(application) {
+		        const fieldValue = application[searchField] ? application[searchField].toString().toLowerCase() : '';
+		        return fieldValue.includes(searchInput);
+		    });
+
+		    // 更新表格内容
+		    const tbody = $("#application-table tbody");
+		    tbody.empty();
+		    filteredResults.forEach(function(application) {
+		        const row = `<tr>
+		            <td>${application.orderid}</td>
+		            <td>${application.uid}</td>
+		            <td>${application.money}</td>
+		            <td>${application.starttime}</td>
+		            <td>${application.finishedtime}</td>
+		            <td><select><option>处理中</option><option>已完成</option></select></td>
+		            <td><button class="btn-pay" onclick="pay('${application.orderid}', '${application.uid}', '${application.money}', '${application.starttime}', '${application.finishedtime}', '${application.status}')">支付</button></td>
+		        </tr>`;
+		        tbody.append(row);
+		    });
+
+		    // 更新分页
+		    updatePagination(1); // 搜索后默认回到第一页
+		}
+
+		// 初始化页面
+		$(document).ready(function() {
+		    checkLogin();
+		    loadApplications(currentPage);
+		});
+
+    </script>
+</body>
+</html>
