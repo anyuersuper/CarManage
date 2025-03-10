@@ -1,5 +1,12 @@
-{"properties": [{
-  "name": "mybatis.mapper-locations",
-  "type": "java.lang.String",
-  "description": "A description for 'mybatis.mapper-locations'"
-}]}
+{"properties": [
+  {
+    "name": "mybatis.mapper-locations",
+    "type": "java.lang.String",
+    "description": "A description for 'mybatis.mapper-locations'"
+  },
+  {
+    "name": "image.savepath",
+    "type": "java.lang.String",
+    "description": "A description for 'image.savepath'"
+  }
+]}

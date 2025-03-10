@@ -63,6 +63,16 @@
             max-height: 200px; /* 最大高度 */
         }
 
+        /* 处理文件输入框 */
+        .form-group input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+
         .form-group button {
             width: 100%;
             padding: 14px;
@@ -100,6 +110,20 @@
         .navbar:hover {
             text-decoration: underline;
         }
+
+        /* 图片预览 */
+        .image-preview {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: center; /* 水平居中显示图片 */
+        }
+
+        .image-preview img {
+            max-width: 100px;
+            max-height: 100px;
+            border-radius: 8px;
+        }
     </style>
 </head>
 <body>
@@ -115,6 +139,16 @@
                 <label for="content">申请内容</label>
                 <textarea id="content" name="content" placeholder="请输入申请内容" required></textarea>
             </div>
+
+            <!-- 图片上传输入 -->
+            <div class="form-group">
+                <label for="images">上传图片</label>
+                <input type="file" id="images" name="images" accept="image/*" multiple>
+            </div>
+
+            <!-- 图片预览展示区域 -->
+            <div class="image-preview" id="image-preview"></div>
+
             <div class="form-group">
                 <button type="submit">提交申请</button>
             </div>
@@ -123,36 +157,70 @@
     </div>
 
     <script>
-        $(document).ready(function() {
-            $('#add-sub-form').on('submit', function(e) {
-                e.preventDefault(); // 阻止表单默认提交行为
+		$(document).ready(function () {
+		    // 处理图片上传并展示预览
+		    $('#images').on('change', function (event) {
+		        const files = event.target.files;
+		        const previewContainer = $('#image-preview');
 
-                let content = $('#content').val();
+		        // 清空现有的图片预览
+		        previewContainer.empty();
 
-                let newSub = {
-                    content: content
-                };
+		        // 限制最多选择三张图片
+		        if (files.length > 3) {
+		            alert("最多只能上传三张图片！");
+		            $(this).val(''); // 清空文件选择框
+		            return;
+		        }
 
-                // 发送 POST 请求到后端
-                $.ajax({
-                    url: '/cmsub/add',
-                    type: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify(newSub),
-                    success: function(response) {
-                        if (response === 1) {
-                            alert("申请记录已添加！");
-                            $('#add-sub-form')[0].reset();
-                        } else {
-                            $('#error-message').text("添加申请记录失败，请重试！").show();
-                        }
-                    },
-                    error: function() {
-                        $('#error-message').text("添加申请记录失败，请重试！").show();
-                    }
-                });
-            });
-        });
+		        // 预览图片
+		        for (let i = 0; i < files.length; i++) {
+		            const file = files[i];
+		            const reader = new FileReader();
+
+		            reader.onload = function (e) {
+		                const img = $('<img>').attr('src', e.target.result);
+		                previewContainer.append(img);
+		            };
+
+		            reader.readAsDataURL(file);
+		        }
+		    });
+
+		    // 提交申请
+		    $('#add-sub-form').on('submit', function (e) {
+		        e.preventDefault(); // 阻止表单默认提交
+
+		        let formData = new FormData();
+		        formData.append('content', $('#content').val());
+
+		        let files = $('#images')[0].files;
+		        for (let i = 0; i < files.length; i++) {
+		            formData.append('files', files[i]); // 追加所有文件
+		        }
+
+		        $.ajax({
+		            url: '/cmsub/add',
+		            type: 'POST',
+		            data: formData,
+		            contentType: false,
+		            processData: false,
+		            success: function (response) {
+		                if (response === 1) {
+		                    alert("申请提交成功！");
+		                    $('#add-sub-form')[0].reset();
+		                    $('#image-preview').empty();
+		                } else {
+		                    alert("申请提交失败，请重试！");
+		                }
+		            },
+		            error: function () {
+		                alert("网络错误，请稍后再试！");
+		            }
+		        });
+		    });
+		});
+
     </script>
 
 </body>

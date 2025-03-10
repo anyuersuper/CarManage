@@ -32,6 +32,12 @@
     values (#{picid,jdbcType=INTEGER}, #{subid,jdbcType=INTEGER}, #{filepath,jdbcType=VARCHAR}
       )
   </insert>
+  
+  <select id="selectAll" resultMap="BaseResultMap">
+	select
+	<include refid="Base_Column_List" />
+	from cm_pic
+	</select>
   <insert id="insertSelective" parameterType="com.carmanage.dao.cmpic">
     insert into cm_pic
     <trim prefix="(" suffix=")" suffixOverrides=",">
