@@ -348,15 +348,16 @@
 		    let finishedtime = row.find("td").eq(4).text().trim();
 		    const status = row.find("select").val();
 
-		    // 判断如果status是已完成，则不需要输入金额
-		    let money = 0;
-		    if (status !== "已完成") {
-		        money = prompt("请输入金额：");
-		        if (money === null || isNaN(money) || money <= 0) {
-		            alert("请输入有效的金额！");
-		            return;
-		        }
-		    }
+		    // 判断如果修改已完成，则需要输入金额
+			let money = 0;
+			if (status == "已完成") {
+			    money = prompt("请输入金额：");
+			    if (money === null || isNaN(money) || money <= 0) {
+			        alert("请输入有效的金额！");
+			        return;
+			    }
+			}
+
 
 		    // 确保时间格式正确
 		    starttime = starttime ? new Date(starttime).toISOString().slice(0, 19) : null;
@@ -391,6 +392,26 @@
 		    });
 		}
 
+		// 删除工单
+		function deleteApplication(workorderid) {
+		    if (confirm("确定要删除这个工单吗？")) {
+		        $.ajax({
+		            url: `/cmworkorder/delete/${workorderid}`,  // 调用删除接口
+		            method: "GET",
+		            success: function (response) {
+		                if (response === 1) {
+		                    alert("工单删除成功！");
+		                    loadApplications(currentPage);  // 重新加载工单列表
+		                } else {
+		                    alert("工单删除失败！");
+		                }
+		            },
+		            error: function () {
+		                alert("请求失败！");
+		            }
+		        });
+		    }
+		}
 
 
 		// 搜索工单
@@ -456,21 +477,30 @@
 		            document.getElementById('greeting').innerText = `${usernameValue}，你好！`;
 
 		            // 调用 search 接口获取用户信息
-					fetch(`/cmusr/search/${usernameValue}`)
-					    .then(response => response.json())
-					    .then(user => {
-					        // 如果用户权限为 4 或 3，显示 "用户管理" 链接和修改按钮
-					        if (user && (user.authority === 4 || user.authority === 3)) {
-					            document.getElementById('user-management-link').style.display = "inline-block";
-					            window.canEdit = true;  // 用户有权限修改
-					        } else {
-					            window.canEdit = false; // 用户没有权限修改
-					        }
-					    })
-					    .catch(error => console.error('获取用户信息失败:', error));
+		            fetch(`/cmusr/search/${usernameValue}`)
+		                .then(response => response.json())
+		                .then(user => {
+		                    // 如果用户权限为 4，显示 "用户管理" 链接并且允许修改
+		                    if (user && user.authority === 4) {
+		                        document.getElementById('user-management-link').style.display = "inline-block";
+		                        window.canEdit = true;  // 用户有权限修改
+		                    } 
+		                    // 如果用户权限为 3，允许修改但不显示 "用户管理" 链接
+		                    else if (user && user.authority === 3) {
+		                        document.getElementById('user-management-link').style.display = "none";
+		                        window.canEdit = true;  // 用户有权限修改
+		                    } 
+		                    // 其他用户既没有 "用户管理" 链接，也没有修改权限
+		                    else {
+		                        document.getElementById('user-management-link').style.display = "none";
+		                        window.canEdit = false; // 用户没有权限修改
+		                    }
+		                })
+		                .catch(error => console.error('获取用户信息失败:', error));
 		        }
 		    }
 		}
+
 
 
 	</script>

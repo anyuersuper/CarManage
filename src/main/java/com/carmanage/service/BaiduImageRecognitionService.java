@@ -1,16 +1,30 @@
 package com.carmanage.service;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 import java.io.*;
 import java.net.*;
 import java.nio.file.Files;
 import java.util.Base64;
 import org.json.JSONObject;
 
+@Service
 public class BaiduImageRecognitionService implements ImageRecognitionService {
 
-    // Baidu API Keys
-    private static final String API_KEY = "bPY4lVG048ydQ2e99a6gOCGu";
-    private static final String SECRET_KEY = "BmfvIQ1o6WfowVvOHiADW6GjrcIqe1vd";
+    // 保持变量名不变
+    private static String API_KEY;
+    private static String SECRET_KEY;
+
+    // 使用 @Value 注解从配置文件中注入值
+    @Value("${api.key}")
+    public void setApiKey(String apiKey) {
+        API_KEY = apiKey;
+    }
+
+    @Value("${api.passkey}")
+    public void setSecretKey(String secretKey) {
+        SECRET_KEY = secretKey;
+    }
 
     @Override
     public JSONObject recognizeCar(String filepath) throws IOException {
@@ -69,8 +83,6 @@ public class BaiduImageRecognitionService implements ImageRecognitionService {
         }
         in.close();
         
-        //System.out.println("API Response: " + response); // 打印API的原始响应
-
         return response.toString();
     }
 }
