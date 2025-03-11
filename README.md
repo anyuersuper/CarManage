@@ -1,1 +1,24 @@
-# ✅ 车辆维修审批管理系统
+车辆维修审批管理系统
+
+用户登录
+![image](https://github.com/user-attachments/assets/4b81edb7-aef0-4d41-8b8b-f6b98648db54)
+用户注册
+![image](https://github.com/user-attachments/assets/403e5fd6-2a3d-46e6-a171-331d187b5cb0)
+首页
+![image](https://github.com/user-attachments/assets/1563f7cc-ac3a-4524-964d-b5292752dcbf)
+用户管理
+![image](https://github.com/user-attachments/assets/3f556a57-0a94-4fc3-8d49-3909c15e33c0)
+车辆管理
+![image](https://github.com/user-attachments/assets/236f4a3e-7813-4f23-b4ee-bd4b7fa39325)
+添加车辆
+![image](https://github.com/user-attachments/assets/cd856671-e546-433c-aa98-2e6d120a37fd)
+账单管理
+![image](https://github.com/user-attachments/assets/7f77b63e-a603-4ad6-8717-3dcffd7a2986)
+工单管理
+![image](https://github.com/user-attachments/assets/1d380c4c-bbb2-470b-a0fd-d3e41120d065)
+申请管理
+![image](https://github.com/user-attachments/assets/1520c044-e1da-49ce-8316-0d981eb8244b)
+提交申请
+![image](https://github.com/user-attachments/assets/c8f2f5e8-4b95-4cff-ba28-f7db0fe092b6)
+查看申请
+![image](https://github.com/user-attachments/assets/905791d2-e922-40ec-ab2f-c0a875659921)
