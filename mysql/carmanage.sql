@@ -11,7 +11,7 @@
  Target Server Version : 80016
  File Encoding         : 65001
 
- Date: 11/03/2025 14:48:04
+ Date: 11/03/2025 15:44:08
 */
 
 SET NAMES utf8mb4;
@@ -35,7 +35,7 @@ CREATE TABLE `cm_car`  (
 -- ----------------------------
 -- Records of cm_car
 -- ----------------------------
-INSERT INTO `cm_car` VALUES (1, 2, '大众捷达', '2019', '黑色');
+INSERT INTO `cm_car` VALUES (1, 4, '本田思铂睿', '2009-2017', '红色');
 
 -- ----------------------------
 -- Table structure for cm_order
@@ -56,7 +56,7 @@ CREATE TABLE `cm_order`  (
 -- ----------------------------
 -- Records of cm_order
 -- ----------------------------
-INSERT INTO `cm_order` VALUES (1, 2, 0, '2025-03-11 14:44:59', '2025-03-11 14:46:03.898000', '已完成');
+INSERT INTO `cm_order` VALUES (1, 4, 9900, '2025-03-11 15:34:37', '2025-03-11 15:43:13.655000', '已完成');
 
 -- ----------------------------
 -- Table structure for cm_pic
@@ -93,7 +93,7 @@ CREATE TABLE `cm_sub`  (
 -- ----------------------------
 -- Records of cm_sub
 -- ----------------------------
-INSERT INTO `cm_sub` VALUES (1, 2, '我的车坏了请修复', '通过');
+INSERT INTO `cm_sub` VALUES (1, 4, '我的车子坏了请维修！', '通过');
 
 -- ----------------------------
 -- Table structure for cm_usr
@@ -113,6 +113,7 @@ CREATE TABLE `cm_usr`  (
 -- ----------------------------
 INSERT INTO `cm_usr` VALUES (1, 'admin', 'admin', 4);
 INSERT INTO `cm_usr` VALUES (2, 'shen', '12345678a', 2);
+INSERT INTO `cm_usr` VALUES (4, 'user', '12345678a', 1);
 INSERT INTO `cm_usr` VALUES (3, 'wei', '12345678a', 3);
 
 -- ----------------------------
@@ -136,6 +137,6 @@ CREATE TABLE `cm_workorder`  (
 -- ----------------------------
 -- Records of cm_workorder
 -- ----------------------------
-INSERT INTO `cm_workorder` VALUES (1, 2, 3, '2025-03-11 14:44:59', '2025-03-11 14:45:45', '已完成');
+INSERT INTO `cm_workorder` VALUES (1, 4, 3, '2025-03-11 15:34:37', '2025-03-11 15:42:57', '已完成');
 
 SET FOREIGN_KEY_CHECKS = 1;
