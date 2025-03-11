@@ -1,5 +1,5 @@
 # 车辆维修审批系统
-实验教程https://www.bilibili.com/video/BV1fCQVYrEC8/?share_source=copy_web&vd_source=3768cdbf02735a5ba891fa514290078e
+使用https://www.bilibili.com/video/BV1fCQVYrEC8/?share_source=copy_web&vd_source=3768cdbf02735a5ba891fa514290078e
 ## 用户登录
 ![用户登录](https://github.com/user-attachments/assets/9a4a8527-e310-4e64-ad66-a0f3f39f9701)
 
