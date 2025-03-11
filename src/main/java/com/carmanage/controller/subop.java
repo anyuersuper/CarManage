@@ -2,6 +2,9 @@ package com.carmanage.controller;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.attribute.FileTime;
 import java.rmi.server.UID;
 import java.sql.Date;
 import java.util.ArrayList;
@@ -51,6 +54,8 @@ public class subop {
     
     
     
+   
+    
     //查找记录根据uid
     @GetMapping("/find/{subid}")
     public cmsub selectByPrimaryKey(@PathVariable  Integer subid)
@@ -67,7 +72,7 @@ public class subop {
 	
 	    // 计算 picid
 	    List<cmpic> all = cmpicMapper.selectAll();
-	    int maxPicid = all.stream().mapToInt(cmpic::getPicid).max().orElse(-1);
+	    int maxPicid = all.stream().mapToInt(cmpic::getPicid).max().orElse(0);
 	    int picid = maxPicid + 1;
 	    
 	    // 定义文件保存路径
@@ -92,6 +97,10 @@ public class subop {
 	    newPic.setPicid(picid);
 	    newPic.setSubid(subid);
 	    newPic.setFilepath(filepath);
+	    
+	   
+	
+
 	    return cmpicMapper.insert(newPic);
     }
 
@@ -110,7 +119,7 @@ public class subop {
         }
 
         int uid = usr.getUid();
-        if (uid == 1 || usr.getAuthority() == 2) {
+        if (usr.getAuthority() == 4 || usr.getAuthority() == 2) {
             return cmsubMapper.selectAll();
         } else { 
             return cmsubMapper.selectByUid(uid);
@@ -129,7 +138,7 @@ public class subop {
     		if (row.getStatus().equals("通过")) {
     			cmworkorder cmworkorderrow = new cmworkorder();
     			List<cmworkorder> all = cmworkorderMapper.selectAll();
-    			int maxworkorderid = all.stream().mapToInt(cmworkorder::getWorkorderid).max().orElse(-1);
+    			int maxworkorderid = all.stream().mapToInt(cmworkorder::getWorkorderid).max().orElse(0);
     			cmworkorderrow.setWorkorderid(maxworkorderid + 1);
     			cmworkorderrow.setUid(demo.getUid());
     			cmworkorderrow.setCmuid(3);
@@ -161,7 +170,7 @@ public class subop {
         // 计算 subid
         List<cmsub> all = cmsubMapper.selectAll();
         int uid = cmusrMapper.selectByPrimaryKey(username).getUid();
-        int maxsubid = all.stream().mapToInt(cmsub::getSubid).max().orElse(-1);
+        int maxsubid = all.stream().mapToInt(cmsub::getSubid).max().orElse(0);
         int subid = maxsubid + 1;
 
         // 创建并插入 `cmsub`

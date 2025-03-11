@@ -241,22 +241,32 @@
 		let currentPage = 1;
 		let filteredApplications = [];
 
-		// 检查用户登录状态以及身份
+		// 检查登录状态并获取用户信息
 		function checkLogin() {
 		    let cookies = document.cookie.split('; ');
+		    let isLoggedIn = cookies.find(cookie => cookie.startsWith('isLoggedIn='));
 		    let username = cookies.find(cookie => cookie.startsWith('username='));
 
-		    if (username) {
-		        let usernameValue = username.split('=')[1];
-		        document.getElementById('greeting').innerText = `${usernameValue}，你好！`;
-
-		        // 如果是 admin，显示 "用户管理" 链接
-		        if (usernameValue === "admin") {
-		            document.getElementById('user-management-link').style.display = "inline-block";
-		        }
-		    } else {
+		    if (!isLoggedIn) {
 		        // 如果没有登录，跳转到登录页面
 		        window.location.href = "/index.html";
+		    } else {
+		        // 如果已登录，获取用户名并查询用户权限
+		        if (username) {
+		            let usernameValue = username.split('=')[1];
+		            document.getElementById('greeting').innerText = `${usernameValue}，你好！`;
+
+		            // 调用 search 接口获取用户信息
+		            fetch(`/cmusr/search/${usernameValue}`)
+		                .then(response => response.json())
+		                .then(user => {
+		                    // 如果用户权限为 4，显示 "用户管理" 链接
+		                    if (user && user.authority === 4) {
+		                        document.getElementById('user-management-link').style.display = "inline-block";
+		                    }
+		                })
+		                .catch(error => console.error('获取用户信息失败:', error));
+		        }
 		    }
 		}
 

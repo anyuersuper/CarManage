@@ -45,7 +45,7 @@ public class workorderop {
 	
 	@GetMapping("/myworkorder")
     public List<cmworkorder> myworkorder(@CookieValue(value = "username", required = false) String username) {
-    	if (username.equals("admin")) {
+    	if (cmusrMapper.selectByPrimaryKey(username).getAuthority() == 4) {
 			return cmworkorderMapper.selectAll();
 		}
     	
@@ -85,7 +85,7 @@ public class workorderop {
     	else {
 			if (row.getStatus().equals("已完成")) {
 				List<cmorder> all = cmorderMapper.selectAll();
-				int maxorderid = all.stream().mapToInt(cmorder::getOrderid).max().orElse(-1);
+				int maxorderid = all.stream().mapToInt(cmorder::getOrderid).max().orElse(0);
 				cmorder newcmorder = new cmorder();
 				newcmorder.setOrderid(maxorderid + 1);
 				newcmorder.setUid(row.getUid());

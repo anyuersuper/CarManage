@@ -36,7 +36,7 @@ public class orderop {
 	
 	@GetMapping("/myorder")
     public List<cmorder> myorder(@CookieValue(value = "username", required = false) String username) {
-    	if (username.equals("admin")) {
+    	if (cmusrMapper.selectByPrimaryKey(username).getAuthority() == 4) {
 			return cmorderMapper.selectAll();
 		}
     	else {

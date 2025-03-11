@@ -67,6 +67,17 @@
 		    <artifactId>mybatis-plus-generator</artifactId>
 		    <version>3.5.7</version>
 		</dependency>
+		 
+		<!--图片识别-->
+		<dependency>
+		    <groupId>org.json</groupId>
+		    <artifactId>json</artifactId>
+		    <version>20210307</version>
+		</dependency>
+
+		
+
+		
 	</dependencies>
 
 	<build>

@@ -196,17 +196,20 @@
     <div class="container">
         <h1 id="greeting"></h1>
 
-        <div class="search-container">
-            <select id="searchField">
-                <option value="carid">车辆ID</option>
-                <option value="uid">UID</option>
-                <option value="kind">种类</option>
-                <option value="year">年份</option>
-                <option value="color">颜色</option>
-            </select>
-            <input type="text" id="searchInput" placeholder="请输入搜索内容">
-            <button class="btn btn-search" onclick="searchCars()">搜索</button>
-        </div>
+		<div class="search-container">
+		    <select id="searchField">
+		        <option value="carid">车辆ID</option>
+		        <option value="uid">UID</option>
+		        <option value="kind">种类</option>
+		        <option value="year">年份</option>
+		        <option value="color">颜色</option>
+		    </select>
+		    <input type="text" id="searchInput" placeholder="请输入搜索内容">
+		    <button class="btn btn-search" onclick="searchCars()">搜索</button>
+			<button class="btn btn-search" onclick="window.location.href='/caradd.html'">添加车辆</button> <!-- 使用 JavaScript 跳转 -->
+		</div>
+
+
 
         <div class="table-container">
             <table>
@@ -369,39 +372,36 @@
 
 			// 检查用户是否已登录
 			function checkLogin() {
-    			let cookies = document.cookie.split('; ');
-			    let isLoggedIn = cookies.find(cookie => cookie.startsWith('isLoggedIn='));
-			    let usernameCookie = cookies.find(cookie => cookie.startsWith('username='));
-			
-			    if (!isLoggedIn) {
-			        // 没有登录，跳转到登录页面
-			        window.location.href = "/index.html";
-			    } else {
-			        // 获取用户名
-			        let usernameValue = usernameCookie ? usernameCookie.split('=')[1] : null;
-			
-			        // 显示问候信息
-			        if (usernameValue) {
-			            document.getElementById('greeting').innerText = `${usernameValue}，你好！`;
-			        }
-			
-			        // 只有 admin 账户才显示 "用户管理" 链接
-			        if (usernameValue === "admin") {
-			            document.getElementById('user-management-link').style.display = "inline-block";
-			        } else {
-			            document.getElementById('user-management-link').style.display = "none";
-			        }
-			    }
-			}
+		    let cookies = document.cookie.split('; ');
+		    let isLoggedIn = cookies.find(cookie => cookie.startsWith('isLoggedIn='));
+		    let username = cookies.find(cookie => cookie.startsWith('username='));
+
+		    if (!isLoggedIn) {
+		        // 如果没有登录，跳转到登录页面
+		        window.location.href = "/index.html";
+		    } else {
+		        // 如果已登录，获取用户名并查询用户权限
+		        if (username) {
+		            let usernameValue = username.split('=')[1];
+		            document.getElementById('greeting').innerText = `${usernameValue}，你好！`;
+
+		            // 调用 search 接口获取用户信息
+		            fetch(`/cmusr/search/${usernameValue}`)
+		                .then(response => response.json())
+		                .then(user => {
+		                    // 如果用户权限为 4，显示 "用户管理" 链接
+		                    if (user && user.authority === 4) {
+		                        document.getElementById('user-management-link').style.display = "inline-block";
+		                    }
+		                })
+		                .catch(error => console.error('获取用户信息失败:', error));
+		        }
+		    }
+		}
 
 			   
 
-			// 页面加载完成后获取数据 & 检查登录状态
-			$(document).ready(function() {
-			    checkLogin();
-			    showGreeting();
-			    fetchCars();
-			});
+			
 			
 			
 			//搜索
@@ -448,7 +448,12 @@
 			    renderTable();  // 重新渲染表格
 			}
 
-
+			// 页面加载完成后获取数据 & 检查登录状态
+			$(document).ready(function() {
+			    checkLogin();
+			    showGreeting();
+			    fetchCars();
+			});
 
 
 	    </script>

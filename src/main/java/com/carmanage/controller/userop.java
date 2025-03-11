@@ -73,7 +73,7 @@ public class userop {
     	List<cmusr> all = cmusrMapper.selectAll();
     	
     	row.setAuthority(1);
-    	int maxUid = all.stream().mapToInt(cmusr::getUid).max().orElse(-1);
+    	int maxUid = all.stream().mapToInt(cmusr::getUid).max().orElse(0);
     	row.setUid(maxUid+1);
     	if (cmusrMapper.insert(row) == 1) {
 			return "注册成功！";

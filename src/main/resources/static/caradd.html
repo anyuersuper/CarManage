@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>添加车辆</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+            position: relative;
+        }
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .back-button:hover {
+            background-color: #0056b3;
+        }
+        .form-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            width: 350px;
+            text-align: center;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .message {
+            margin-top: 15px;
+            color: red;
+        }
+        .scan-link {
+            display: block;
+            margin-top: 20px;
+            color: #007bff;
+            text-decoration: none;
+            font-size: 16px;
+        }
+        .scan-link:hover {
+            text-decoration: underline;
+        }
+        input[type="file"] {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- 返回按钮 -->
+    <a href="carmanage.html" class="back-button">← 返回</a>
+
+    <div class="form-container">
+        <h1>添加车辆</h1>
+        <form id="carForm">
+            <div>
+                <input type="text" id="kind" name="kind" placeholder="请输入车辆种类" required>
+            </div>
+            <div>
+                <input type="text" id="year" name="year" placeholder="请输入车辆年份" required>
+            </div>
+            <div>
+                <input type="text" id="color" name="color" placeholder="请输入车辆颜色" required>
+            </div>
+            <button type="submit">提交</button>
+        </form>
+        <p class="message" id="message"></p>
+
+        <!-- 添加图片扫描链接 -->
+        <a href="#" class="scan-link" id="scanLink">点击选择图片并扫描</a>
+        <!-- 文件选择控件，用于上传图片 -->
+        <input type="file" id="fileInput" accept="image/*">
+    </div>
+
+    <script>
+        document.getElementById("carForm").addEventListener("submit", async function(event) {
+            event.preventDefault();  // 防止表单默认提交行为
+
+            let kind = document.getElementById("kind").value.trim();
+            let year = document.getElementById("year").value.trim();
+            let color = document.getElementById("color").value.trim();
+            let messageBox = document.getElementById("message");
+
+            // 简单验证
+            if (!kind || !year || !color) {
+                messageBox.innerText = "所有字段都必须填写！";
+                messageBox.style.color = "red";
+                return;
+            }
+
+            // 组织请求体
+            let carData = {
+                kind: kind,
+                year: year,
+                color: color
+            };
+
+            try {
+                // 发送 POST 请求到后端 /cmcar/add 接口
+                let response = await fetch('/cmcar/add', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(carData)
+                });
+
+                // 处理响应
+                if (response.ok) {
+                    let result = await response.json();
+                    if (result === 1) {
+                        messageBox.innerText = "车辆信息添加成功！";
+                        messageBox.style.color = "green";
+                        document.getElementById("carForm").reset();  // 重置表单
+						alert("车辆信息添加成功！");
+                    } else {
+                        messageBox.innerText = "车辆信息添加失败！";
+                        messageBox.style.color = "red";
+                    }
+                } else {
+                    messageBox.innerText = "请求失败，请稍后再试！";
+                    messageBox.style.color = "red";
+                }
+            } catch (error) {
+                messageBox.innerText = "发生错误，请检查网络连接！";
+                messageBox.style.color = "red";
+            }
+        });
+
+        // 处理图片选择
+        document.getElementById("scanLink").addEventListener("click", function(event) {
+            event.preventDefault();
+            document.getElementById("fileInput").click();  // 模拟点击文件输入框
+        });
+
+        document.getElementById("fileInput").addEventListener("change", function(event) {
+            let file = event.target.files[0];
+            if (file) {
+                let formData = new FormData();
+                formData.append("file", file);
+
+                // 上传图片并进行识别
+                fetch('/cmcar/recognize', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // 识别结果返回后，将值填入表单
+                    document.getElementById("kind").value = data.kind;
+                    document.getElementById("year").value = data.year;
+                    document.getElementById("color").value = data.color;
+
+                    document.getElementById("message").innerText = "识别结果已填入表单！";
+                    document.getElementById("message").style.color = "green";
+                })
+                .catch(error => {
+                    document.getElementById("message").innerText = "识别失败，请重试！";
+                    document.getElementById("message").style.color = "red";
+                });
+            }
+        });
+    </script>
+
+</body>
+</html>

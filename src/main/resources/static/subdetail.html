@@ -91,7 +91,7 @@
 					            
 					            // Assuming images.filepath contains a local file path, 
 					            // modify it to be accessible via HTTP
-					            const imgUrl = `http://localhost:8080/image/${image.filepath.split('/image/')[1]}`;
+					            const imgUrl = `/image/${image.filepath.split('/image/')[1]}`;
 								console.log(imgUrl);
 					            const img = document.createElement("img");
 					            img.src = imgUrl;  // Use the HTTP URL
